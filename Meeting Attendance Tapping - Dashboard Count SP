@@ -52,3 +52,144 @@ HistoryMeetings → Where MeetingDate has passed and Status = 'Completed'.
 👉 Question for you:
 Does your tbl_Meetings table already have a Status column (like Completed, Missed, Cancelled), or should I base the logic only on MeetingDate?
 
+---
+
+Perfect 👍 Let’s display the result of your stored procedure (sp_GetMeetingCounts) on the 4 dashboard cards in your ASP.NET Web Forms (ASPX) page.
+
+
+---
+
+1. ASPX Page (Dashboard.aspx)
+
+Here’s a sample Bootstrap-based card layout with 4 cards:
+
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs" Inherits="YourNamespace.Dashboard" %>
+<!DOCTYPE html>
+<html>
+<head runat="server">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div class="container mt-4">
+            <div class="row g-3">
+
+                <!-- Total Meetings -->
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary shadow">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Total Meetings</h5>
+                            <asp:Label ID="lblTotalMeetings" runat="server" CssClass="display-6"></asp:Label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Meetings -->
+                <div class="col-md-3">
+                    <div class="card text-white bg-success shadow">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Upcoming</h5>
+                            <asp:Label ID="lblUpcomingMeetings" runat="server" CssClass="display-6"></asp:Label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Missed Meetings -->
+                <div class="col-md-3">
+                    <div class="card text-white bg-danger shadow">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Missed</h5>
+                            <asp:Label ID="lblMissedMeetings" runat="server" CssClass="display-6"></asp:Label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History -->
+                <div class="col-md-3">
+                    <div class="card text-white bg-secondary shadow">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">History</h5>
+                            <asp:Label ID="lblHistoryMeetings" runat="server" CssClass="display-6"></asp:Label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </form>
+</body>
+</html>
+
+
+---
+
+2. Code-Behind (Dashboard.aspx.cs)
+
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Configuration;
+
+namespace YourNamespace
+{
+    public partial class Dashboard : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                LoadMeetingCounts();
+            }
+        }
+
+        private void LoadMeetingCounts()
+        {
+            string connStr = ConfigurationManager.ConnectionStrings["YourConnectionString"].ConnectionString;
+
+            using (SqlConnection con = new SqlConnection(connStr))
+            {
+                using (SqlCommand cmd = new SqlCommand("sp_GetMeetingCounts", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    con.Open();
+
+                    SqlDataReader dr = cmd.ExecuteReader();
+                    if (dr.Read())
+                    {
+                        lblTotalMeetings.Text = dr["TotalMeetings"].ToString();
+                        lblUpcomingMeetings.Text = dr["UpcomingMeetings"].ToString();
+                        lblMissedMeetings.Text = dr["MissedMeetings"].ToString();
+                        lblHistoryMeetings.Text = dr["HistoryMeetings"].ToString();
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+---
+
+3. Web.config connection string
+
+Make sure you have your DB connection string:
+
+<connectionStrings>
+  <add name="YourConnectionString" 
+       connectionString="Data Source=YOURSERVER;Initial Catalog=YourDatabase;Integrated Security=True" 
+       providerName="System.Data.SqlClient" />
+</connectionStrings>
+
+
+---
+
+✅ This will call your stored procedure and display the counts inside each card.
+
+
+---
+
+Do you want me to also make the cards clickable (e.g., clicking "Upcoming" shows a list of upcoming meetings)?
+
+
+
