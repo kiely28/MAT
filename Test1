@@ -559,6 +559,93 @@ namespace YourProject
 Would you like me to also make the GridView refresh automatically every few seconds (like a live monitor) without reloading the whole page?
 
 
+---
+01:32 PM
+Nice idea 👍 instead of just showing plain text, let’s make the tap response message appear as a Bootstrap alert box (alert-success, alert-danger, etc).
+
+We’ll:
+
+Wrap the label in a Bootstrap alert <div>
+
+Dynamically set its CSS class in C# depending on the result
+
+
+
+---
+
+1️⃣ ASPX (Replace Label with Alert Placeholder)
+
+<div class="mt-3">
+    <asp:Panel ID="pnlAlert" runat="server" Visible="false" CssClass="alert" role="alert">
+        <asp:Label ID="lblMessage" runat="server"></asp:Label>
+    </asp:Panel>
+</div>
+
+
+---
+
+2️⃣ Code-Behind (Set Alert Style)
+
+Update your btnTap_Click handler:
+
+protected void btnTap_Click(object sender, EventArgs e)
+{
+    if (string.IsNullOrEmpty(hfMeetingID.Value) || string.IsNullOrEmpty(txtCardSerial.Text))
+    {
+        ShowAlert("Meeting ID or Card Serial missing!", "danger");
+        return;
+    }
+
+    using (SqlConnection con = new SqlConnection(connStr))
+    {
+        SqlCommand cmd = new SqlCommand("sp_TapAttendance", con);
+        cmd.CommandType = CommandType.StoredProcedure;
+
+        cmd.Parameters.AddWithValue("@meetingid", hfMeetingID.Value);
+        cmd.Parameters.AddWithValue("@cardserialno", txtCardSerial.Text);
+        cmd.Parameters.AddWithValue("@tapType", rblTapType.SelectedValue);
+
+        con.Open();
+        var result = cmd.ExecuteScalar();
+        string message = result != null ? result.ToString() : "No response from server.";
+
+        // Decide alert color
+        if (message.Contains("successfully"))
+            ShowAlert(message, "success"); // green
+        else
+            ShowAlert(message, "warning"); // yellow/orange
+    }
+
+    txtCardSerial.Text = "";
+    LoadAttendance();
+}
+
+private void ShowAlert(string message, string type)
+{
+    pnlAlert.Visible = true;
+    lblMessage.Text = message;
+    pnlAlert.CssClass = "alert alert-" + type; // ex: alert-success, alert-warning, alert-danger
+}
+
+
+---
+
+✅ Example Results:
+
+Tap In recorded successfully! → Green alert (alert-success)
+
+Attendance already completed. → Yellow alert (alert-warning)
+
+Meeting ID or Card Serial missing! → Red alert (alert-danger)
+
+
+
+---
+
+Do you want me to also add a fade-out effect so the alert disappears automatically after a few seconds?
+
+
+
 
 
 
