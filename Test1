@@ -644,6 +644,76 @@ Meeting ID or Card Serial missing! → Red alert (alert-danger)
 
 Do you want me to also add a fade-out effect so the alert disappears automatically after a few seconds?
 
+---
+08/23/25
+Great 👍 let’s add a manual close button (×) to the alert so the user can dismiss it anytime, while still keeping the auto-fade after 3 seconds.
+
+
+---
+
+1️⃣ ASPX – Update Alert Panel
+
+We add the Bootstrap dismiss button inside the alert:
+
+<div class="mt-3">
+    <asp:Panel ID="pnlAlert" runat="server" Visible="false" CssClass="alert alert-dismissible fade show" role="alert">
+        <asp:Label ID="lblMessage" runat="server"></asp:Label>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </asp:Panel>
+</div>
+
+<!-- Script for auto fade out -->
+<script type="text/javascript">
+    function fadeOutAlert() {
+        var alertBox = document.getElementById('<%= pnlAlert.ClientID %>');
+        if (alertBox) {
+            setTimeout(function () {
+                alertBox.classList.add("fade");
+                alertBox.classList.remove("show");
+                setTimeout(function () {
+                    alertBox.style.display = "none";
+                }, 500); // wait for fade animation
+            }, 3000); // alert visible for 3 sec
+        }
+    }
+</script>
+
+
+---
+
+2️⃣ Code-Behind – Keep ShowAlert Helper
+
+No change needed except ensuring we include the right classes:
+
+private void ShowAlert(string message, string type)
+{
+    pnlAlert.Visible = true;
+    lblMessage.Text = message;
+    pnlAlert.CssClass = "alert alert-" + type + " alert-dismissible fade show"; 
+
+    // trigger fadeOutAlert after rendering
+    ScriptManager.RegisterStartupScript(this, this.GetType(), "fadeAlert", "fadeOutAlert();", true);
+}
+
+
+---
+
+✅ Now your alert box will:
+
+Show with Bootstrap styles (success, warning, danger)
+
+Auto fade out after 3 seconds
+
+Allow manual dismissal with a close (×) button
+
+
+
+---
+
+⚡ Do you also want me to make the alert position fixed at the top-right corner (like a toast notification) instead of inline below the form?
+
+
+
 
 
 
