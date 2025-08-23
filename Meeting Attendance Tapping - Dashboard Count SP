@@ -1,0 +1,54 @@
+Got it 👍 To populate your 4 dashboard cards (Total Meetings, Upcoming Meetings, Missed Meetings, and History), you’ll need a stored procedure that returns all four counts in a single result set.
+
+Let’s assume your meeting table is called tbl_Meetings with at least these columns:
+
+MeetingID (PK)
+
+MeetingDate (datetime)
+
+Status (optional, could be "Completed", "Cancelled", etc.)
+
+
+Here’s a sample SQL Server stored procedure:
+
+CREATE PROCEDURE sp_GetMeetingCounts
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        -- Total number of meetings
+        (SELECT COUNT(*) FROM tbl_Meetings) AS TotalMeetings,
+
+        -- Meetings scheduled in the future
+        (SELECT COUNT(*) FROM tbl_Meetings 
+         WHERE MeetingDate > GETDATE()) AS UpcomingMeetings,
+
+        -- Meetings scheduled in the past but not attended/missed
+        (SELECT COUNT(*) FROM tbl_Meetings 
+         WHERE MeetingDate < GETDATE()
+           AND Status = 'Missed') AS MissedMeetings,
+
+        -- Meetings already completed (History)
+        (SELECT COUNT(*) FROM tbl_Meetings 
+         WHERE MeetingDate < GETDATE()
+           AND Status = 'Completed') AS HistoryMeetings;
+END
+
+🔹 How it works:
+
+TotalMeetings → All meetings in the table.
+
+UpcomingMeetings → Where MeetingDate is greater than today.
+
+MissedMeetings → Where MeetingDate has passed and Status = 'Missed'.
+
+HistoryMeetings → Where MeetingDate has passed and Status = 'Completed'.
+
+
+
+---
+
+👉 Question for you:
+Does your tbl_Meetings table already have a Status column (like Completed, Missed, Cancelled), or should I base the logic only on MeetingDate?
+
