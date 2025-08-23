@@ -712,6 +712,97 @@ Allow manual dismissal with a close (×) button
 
 ⚡ Do you also want me to make the alert position fixed at the top-right corner (like a toast notification) instead of inline below the form?
 
+---
+04:31 PM
+
+Nice addition 👍
+Let’s add an End Meeting button that updates your tbl_meetings table and sets the meeting’s status to Completed.
+
+We’ll do it via a new stored procedure sp_EndMeeting and call it from an End Meeting button on your ASPX page.
+
+
+---
+
+1️⃣ SQL Stored Procedure – End Meeting
+
+CREATE PROCEDURE sp_EndMeeting
+    @meetingid INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE tbl_meetings
+    SET status = 'Completed'
+    WHERE meeting_id = @meetingid;
+
+    SELECT 'Meeting has been marked as Completed.' AS Message;
+END
+
+
+---
+
+2️⃣ Update ASPX Page – Add Button
+
+Add this button below the attendance list:
+
+<!-- End Meeting Button -->
+<div class="mt-4">
+    <asp:Button ID="btnEndMeeting" runat="server" Text="End Meeting" 
+        CssClass="btn btn-danger" OnClick="btnEndMeeting_Click" />
+</div>
+
+
+---
+
+3️⃣ Code-Behind – End Meeting Handler
+
+Add a new method to handle the button click:
+
+protected void btnEndMeeting_Click(object sender, EventArgs e)
+{
+    if (string.IsNullOrEmpty(hfMeetingID.Value))
+    {
+        ShowAlert("No Meeting ID found!", "danger");
+        return;
+    }
+
+    using (SqlConnection con = new SqlConnection(connStr))
+    {
+        SqlCommand cmd = new SqlCommand("sp_EndMeeting", con);
+        cmd.CommandType = CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@meetingid", hfMeetingID.Value);
+
+        con.Open();
+        var result = cmd.ExecuteScalar();
+        string message = result != null ? result.ToString() : "Meeting update failed.";
+
+        ShowAlert(message, message.Contains("Completed") ? "success" : "danger");
+    }
+
+    // Optionally disable buttons after ending
+    btnTap.Enabled = false;
+    btnEndMeeting.Enabled = false;
+}
+
+
+---
+
+✅ Now you have:
+
+End Meeting button → calls sp_EndMeeting
+
+Updates tbl_meetings.status = Completed
+
+Shows confirmation in a Bootstrap alert
+
+(Optional) disables tapping and end buttons after meeting is ended
+
+
+
+---
+
+⚡ Do you want me to also hide the tap form once the meeting is completed so only the attendance list is visible?
+
 
 
 
