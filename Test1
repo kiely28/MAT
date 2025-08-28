@@ -954,6 +954,55 @@ DataTable is enabled for search/sort/pagination.
 
 
 
+---
+082825
+Got it 👍 You can add a user icon with dropdown for logout on the right side of your navbar. Since you already use Bootstrap 5 and Font Awesome, here’s the updated navbar code:
+
+<!-- Navbar Example -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">My App</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">Activity Logs</a>
+                </li>
+                
+                <!-- User Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle fa-lg me-1"></i> User
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="#">Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="logout.html"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+✅ Changes made:
+
+Added a user dropdown with Font Awesome icon (fa-user-circle).
+
+Dropdown contains Profile and Logout.
+
+Logout link points to logout.html (you can replace with your logout logic).
+
+Used dropdown-menu-end so it aligns to the right side.
+
+
+Do you want me to make the username dynamic (e.g., display from session variable in ASPX/PHP), or just keep it as "User"?
+
 
 
 
