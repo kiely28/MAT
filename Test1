@@ -1005,4 +1005,57 @@ Do you want me to make the username dynamic (e.g., display from session variable
 
 
 
+---
+12:52 PM
+
+Ah 👍 I see the issue — by default Bootstrap aligns the icon link a little higher when it’s just an <i> tag with no text.
+We can vertically center the icon by forcing alignment with Bootstrap utility classes.
+
+Here’s the fix (I added d-flex align-items-center to the <li> and removed extra spacing):
+
+<!-- Navbar Example -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">My App</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">Activity Logs</a>
+                </li>
+
+                <!-- User Dropdown (Centered Icon Only) -->
+                <li class="nav-item dropdown d-flex align-items-center">
+                    <a class="nav-link dropdown-toggle p-0" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle fa-lg"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="#">Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="logout.html"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+✅ Fixes applied:
+
+d-flex align-items-center → forces vertical centering.
+
+p-0 (padding 0) on the link → removes extra top/bottom padding.
+
+Icon should now be perfectly centered in the navbar like the other menu items.
+
+
+Do you want me to also make the icon a bit smaller (fa-md instead of fa-lg) so it visually matches the text links?
+
+
+
 
