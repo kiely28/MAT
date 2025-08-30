@@ -1,3 +1,5 @@
+
+
 Perfect 👍 Let’s connect it to SQL Server, fetch data from tbl_meetings using a stored procedure, and display it in the DataTable with Semantic UI.
 
 
@@ -446,3 +448,28 @@ namespace WebApplication1_MAL
 
 Do you want me to also replace the dummy DataTable with your stored procedure binding (so the list pulls from tbl_meetings automatically)?
 
+
+
+
+---
+
+<asp:GridView ID="gvMeetings" runat="server" 
+    AutoGenerateColumns="false" 
+    ShowHeader="true"
+    CssClass="ui celled table"
+    HeaderStyle-CssClass="ui header">
+    <Columns>
+        <asp:BoundField DataField="MeetingID" HeaderText="ID" />
+        <asp:BoundField DataField="Title" HeaderText="Title" />
+        <asp:BoundField DataField="Description" HeaderText="Description" />
+        <asp:BoundField DataField="MeetingDate" HeaderText="Date" DataFormatString="{0:yyyy-MM-dd}" />
+        <asp:BoundField DataField="Status" HeaderText="Status" />
+        <asp:TemplateField HeaderText="Actions">
+            <ItemTemplate>
+                <button type="button" class="ui blue mini button view-btn">View</button>
+                <button type="button" class="ui green mini button edit-btn">Edit</button>
+                <button type="button" class="ui red mini button delete-btn">Delete</button>
+            </ItemTemplate>
+        </asp:TemplateField>
+    </Columns>
+</asp:GridView>
