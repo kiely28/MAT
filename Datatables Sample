@@ -269,3 +269,180 @@ Do you want me to also make the Edit & Delete buttons actually call stored proce
 </body>
 </html>
 
+----
+
+Perfect 👍 let’s build you a complete working ASPX page that integrates a GridView with Semantic UI + DataTables and avoids the column count error.
+
+This version ensures:
+
+GridView outputs a clean <table> with exactly matching <th> and <td> counts.
+
+Semantic UI & DataTables styling works.
+
+Action buttons (View, Edit, Delete) function with JavaScript.
+
+No extra columns or ASP.NET hidden junk.
+
+
+
+---
+
+✅ Complete list1.aspx
+
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="list1.aspx.cs" Inherits="WebApplication1_MAL.list1" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="utf-8" />
+    <title>Meetings List</title>
+
+    <!-- Semantic UI CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css" />
+
+    <!-- DataTables with Semantic UI CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.semanticui.min.css" />
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- Semantic UI JS -->
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.semanticui.min.js"></script>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div class="ui container" style="margin-top:20px;">
+            <h2 class="ui header">Meetings List</h2>
+            
+            <asp:GridView 
+                ID="gvMeetings" 
+                runat="server" 
+                AutoGenerateColumns="false" 
+                CssClass="ui celled table" 
+                GridLines="None"
+                ShowHeader="true" 
+                ShowFooter="false" 
+                ShowHeaderWhenEmpty="true">
+                <Columns>
+                    <asp:BoundField DataField="MeetingId" HeaderText="Meeting ID" />
+                    <asp:BoundField DataField="Title" HeaderText="Title" />
+                    <asp:BoundField DataField="StartDate" HeaderText="Start Date" DataFormatString="{0:yyyy-MM-dd HH:mm}" />
+                    <asp:BoundField DataField="EndDate" HeaderText="End Date" DataFormatString="{0:yyyy-MM-dd HH:mm}" />
+                    <asp:BoundField DataField="Venue" HeaderText="Venue" />
+                    <asp:BoundField DataField="Status" HeaderText="Status" />
+                    <asp:TemplateField HeaderText="Actions">
+                        <ItemTemplate>
+                            <button type="button" class="ui blue mini button view-btn">View</button>
+                            <button type="button" class="ui green mini button edit-btn">Edit</button>
+                            <button type="button" class="ui red mini button delete-btn">Delete</button>
+                        </ItemTemplate>
+                    </asp:TemplateField>
+                </Columns>
+            </asp:GridView>
+        </div>
+    </form>
+
+    <script>
+        $(document).ready(function () {
+            // Initialize DataTables
+            var table = $('#<%= gvMeetings.ClientID %>').DataTable({
+                "paging": true,
+                "searching": true,
+                "info": true,
+                "autoWidth": false
+            });
+
+            // Action button events
+            $('#<%= gvMeetings.ClientID %>').on('click', '.view-btn', function () {
+                var title = $(this).closest('tr').find('td:eq(1)').text();
+                alert("Viewing Meeting: " + title);
+            });
+
+            $('#<%= gvMeetings.ClientID %>').on('click', '.edit-btn', function () {
+                var title = $(this).closest('tr').find('td:eq(1)').text();
+                alert("Editing Meeting: " + title);
+            });
+
+            $('#<%= gvMeetings.ClientID %>').on('click', '.delete-btn', function () {
+                var title = $(this).closest('tr').find('td:eq(1)').text();
+                if (confirm("Delete Meeting: " + title + "?")) {
+                    alert("Deleted!");
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+---
+
+✅ Code-behind (list1.aspx.cs)
+
+This binds dummy data (replace with your stored procedure later):
+
+using System;
+using System.Data;
+
+namespace WebApplication1_MAL
+{
+    public partial class list1 : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                BindGrid();
+            }
+        }
+
+        private void BindGrid()
+        {
+            // Dummy data for testing
+            DataTable dt = new DataTable();
+            dt.Columns.Add("MeetingId");
+            dt.Columns.Add("Title");
+            dt.Columns.Add("StartDate");
+            dt.Columns.Add("EndDate");
+            dt.Columns.Add("Venue");
+            dt.Columns.Add("Status");
+
+            dt.Rows.Add("1", "Project Kickoff", DateTime.Now, DateTime.Now.AddHours(2), "Conference Room A", "Scheduled");
+            dt.Rows.Add("2", "Team Sync", DateTime.Now.AddDays(1), DateTime.Now.AddDays(1).AddHours(1), "Zoom", "Scheduled");
+            dt.Rows.Add("3", "Review Meeting", DateTime.Now.AddDays(2), DateTime.Now.AddDays(2).AddHours(2), "Board Room", "Pending");
+
+            gvMeetings.DataSource = dt;
+            gvMeetings.DataBind();
+        }
+    }
+}
+
+
+---
+
+🔑 Key Fixes for “Column count error”
+
+1. AutoGenerateColumns="false" (so only your defined columns render).
+
+
+2. Each BoundField has a HeaderText.
+
+
+3. No extra ASP.NET columns (e.g. CommandField, SelectButton).
+
+
+4. Added ShowHeader="true" + ShowHeaderWhenEmpty="true".
+
+
+
+
+---
+
+👉 This version should run cleanly and DataTables will initialize without the column mismatch error.
+
+Do you want me to also replace the dummy DataTable with your stored procedure binding (so the list pulls from tbl_meetings automatically)?
+
