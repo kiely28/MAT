@@ -178,3 +178,94 @@ The View, Edit, and Delete buttons currently just alert() the record; you can wi
 
 Do you want me to also make the Edit & Delete buttons actually call stored procedures (AJAX or postback) so they update the database, instead of just showing alerts?
 
+
+
+---
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="list1.aspx.cs" Inherits="WebApplication1_MAL.list1" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="utf-8" />
+    <title>Meetings List</title>
+
+    <!-- Semantic UI CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css" />
+
+    <!-- DataTables with Semantic UI CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.semanticui.min.css" />
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- Semantic UI JS -->
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.semanticui.min.js"></script>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div class="ui container">
+            <h2 class="ui header">Meetings List</h2>
+            <%--<asp:GridView ID="gvMeetings" runat="server" AutoGenerateColumns="false" CssClass="ui celled table" OnRowCreated="gvMeetings_RowCreated">--%>
+            <asp:GridView ID="gvMeetings" runat="server" AutoGenerateColumns="false" CssClass="ui celled table">
+                <%--<Columns>
+                    <asp:BoundField DataField="MeetingID" HeaderText="ID" />
+                    <asp:BoundField DataField="Title" HeaderText="Title" />
+                    <asp:BoundField DataField="Description" HeaderText="Description" />
+                    <asp:BoundField DataField="MeetingDate" HeaderText="Date" DataFormatString="{0:yyyy-MM-dd}" />
+                    <asp:BoundField DataField="Status" HeaderText="Status" />--%>
+
+
+
+
+
+               <Columns>
+                    <asp:BoundField DataField="MeetingId" HeaderText="Meeting ID" />
+                    <asp:BoundField DataField="Title" HeaderText="Title" />
+                    <asp:BoundField DataField="StartDate" HeaderText="Start Date" DataFormatString="{0:yyyy-MM-dd HH:mm}" />
+                    <asp:BoundField DataField="EndDate" HeaderText="End Date" DataFormatString="{0:yyyy-MM-dd HH:mm}" />
+                    <asp:BoundField DataField="Venue" HeaderText="Venue" />
+                    <asp:BoundField DataField="Status" HeaderText="Status" />
+                    <asp:TemplateField HeaderText="Actions">
+                        <ItemTemplate>
+                            <button type="button" class="ui blue mini button view-btn">View</button>
+                            <button type="button" class="ui green mini button edit-btn">Edit</button>
+                            <button type="button" class="ui red mini button delete-btn">Delete</button>
+                        </ItemTemplate>
+                    </asp:TemplateField>
+                </Columns>
+            </asp:GridView>
+        </div>
+    </form>
+
+    <script>
+        $(document).ready(function () {
+            // Apply DataTable to ASP.NET GridView
+            var table = $('#<%= gvMeetings.ClientID %>').DataTable();
+
+            // Action button events
+            $('#<%= gvMeetings.ClientID %>').on('click', '.view-btn', function () {
+                var row = table.row($(this).closest('tr')).data();
+                alert("Viewing Meeting: " + row[1]);
+            });
+
+            $('#<%= gvMeetings.ClientID %>').on('click', '.edit-btn', function () {
+                var row = table.row($(this).closest('tr')).data();
+                alert("Editing Meeting: " + row[1]);
+            });
+
+            $('#<%= gvMeetings.ClientID %>').on('click', '.delete-btn', function () {
+                var row = table.row($(this).closest('tr')).data();
+                if (confirm("Delete Meeting: " + row[1] + "?")) {
+                    alert("Deleted!");
+                    // You can call an AJAX method here to actually delete from DB
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
