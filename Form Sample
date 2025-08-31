@@ -1,0 +1,200 @@
+Got it 👍 You want the ASPX form to run without needing the database first (just to test the UI).
+
+I’ll strip out the DB connections and instead use static dropdown values for Supplier and PartNo, so the page runs independently.
+
+
+---
+
+ASPX Page (MyReports.aspx)
+
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="MyReports.aspx.cs" Inherits="WebApplication1.MyReports" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="utf-8" />
+    <title>My Reports</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <h1 class="mt-3">My Reports</h1>
+                    <ol class="breadcrumb mb-4">
+                        <li class="breadcrumb-item"><a href="index.aspx">Dashboard</a></li>
+                        <li class="breadcrumb-item active">My Reports</li>
+                    </ol>
+
+                    <!-- Success Message -->
+                    <asp:Panel ID="pnlSuccess" runat="server" CssClass="alert alert-success d-flex align-items-center alert-dismissible" Visible="false">
+                        <i class="fa fa-check-circle me-2"></i>
+                        <div>Save Successfully.</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </asp:Panel>
+
+                    <div class="row">
+                        <!-- Report Date -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Report Date</label><span class="req">*</span>
+                            <asp:TextBox ID="txtReportDate" runat="server" CssClass="form-control" ReadOnly="true"></asp:TextBox>
+                        </div>
+
+                        <!-- Supplier -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Supplier</label><span class="req">*</span>
+                            <asp:DropDownList ID="ddlSupplier" runat="server" CssClass="form-select">
+                                <asp:ListItem Text="Select" Value="" />
+                                <asp:ListItem Text="Supplier A" Value="Supplier A" />
+                                <asp:ListItem Text="Supplier B" Value="Supplier B" />
+                                <asp:ListItem Text="Supplier C" Value="Supplier C" />
+                            </asp:DropDownList>
+                        </div>
+
+                        <!-- Part Number -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Part Number</label><span class="req">*</span>
+                            <asp:DropDownList ID="ddlPartNo" runat="server" CssClass="form-select">
+                                <asp:ListItem Text="Select" Value="" />
+                                <asp:ListItem Text="P-1001" Value="P-1001" />
+                                <asp:ListItem Text="P-2002" Value="P-2002" />
+                                <asp:ListItem Text="P-3003" Value="P-3003" />
+                            </asp:DropDownList>
+                        </div>
+
+                        <!-- Customer -->
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">Customer</label><span class="req">*</span>
+                            <asp:DropDownList ID="ddlCustomer" runat="server" CssClass="form-select">
+                                <asp:ListItem Text="Choose..." />
+                                <asp:ListItem Text="Canon" />
+                                <asp:ListItem Text="Sanyo" />
+                            </asp:DropDownList>
+                        </div>
+
+                        <!-- Control No -->
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">Control No</label><span class="req">*</span>
+                            <asp:TextBox ID="txtCtrlNo" runat="server" CssClass="form-control" ReadOnly="true"></asp:TextBox>
+                        </div>
+
+                        <!-- Lot Number -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Lot Number</label><span class="req">*</span>
+                            <asp:TextBox ID="txtLotNumber" runat="server" CssClass="form-control"></asp:TextBox>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Description</label><span class="req">*</span>
+                            <asp:TextBox ID="txtDescription" runat="server" CssClass="form-control" ReadOnly="true"></asp:TextBox>
+                        </div>
+
+                        <!-- Problem Description -->
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Problem Description :</label><span class="req">*</span>
+                            <asp:TextBox ID="txtProblemDesc" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="4"></asp:TextBox>
+                        </div>
+
+                        <!-- Model -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Model</label><span class="req">*</span>
+                            <asp:DropDownList ID="ddlModel" runat="server" CssClass="form-select">
+                                <asp:ListItem Text="Choose..." />
+                                <asp:ListItem Text="Model X" />
+                                <asp:ListItem Text="Model Y" />
+                            </asp:DropDownList>
+                        </div>
+
+                        <!-- Date Detected -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Date Detected</label><span class="req">*</span>
+                            <asp:TextBox ID="txtDateDetected" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
+                        </div>
+
+                        <!-- Area Detected -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Area Detected</label><span class="req">*</span>
+                            <asp:DropDownList ID="ddlAreaDetected" runat="server" CssClass="form-select">
+                                <asp:ListItem Text="Choose..." />
+                                <asp:ListItem Text="ASSY" />
+                                <asp:ListItem Text="Customer Detection" />
+                                <asp:ListItem Text="QC" />
+                                <asp:ListItem Text="SMT" />
+                                <asp:ListItem Text="PMC" />
+                                <asp:ListItem Text="PPC" />
+                            </asp:DropDownList>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="clearfix mb-3">
+                        <asp:Button ID="btnSubmit" runat="server" CssClass="btn btn-primary btn-md float-end"
+                            Text="Submit" OnClick="btnSubmit_Click" />
+                    </div>
+                </div>
+            </main>
+        </div>
+    </form>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+
+---
+
+CodeBehind (MyReports.aspx.cs)
+
+using System;
+
+namespace WebApplication1
+{
+    public partial class MyReports : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                // Auto-fill report date
+                txtReportDate.Text = DateTime.Now.ToString("dd-MMM-yy");
+
+                // Example: auto-generate a control number
+                txtCtrlNo.Text = "CTRL-" + DateTime.Now.Ticks.ToString().Substring(10);
+            }
+        }
+
+        protected void btnSubmit_Click(object sender, EventArgs e)
+        {
+            // No DB yet – just show success panel
+            pnlSuccess.Visible = true;
+        }
+    }
+}
+
+
+---
+
+✅ With this:
+
+The page loads with today’s date,
+
+Dropdowns are static test values,
+
+Control number is auto-generated (fake for now),
+
+Clicking Submit just shows the success alert.
+
+
+When you’re ready, we can hook back the SQL Server stored procedure for saving.
+
+
+---
+
+Do you want me to also make the success alert disappear automatically after a few seconds (like in Bootstrap toast), or keep it manual close button only?
+
