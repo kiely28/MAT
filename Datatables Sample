@@ -172,3 +172,81 @@ Pulls tbl_meetings data from sp_GetMeetings.
 
 👉 Do you want me to also show you the SQL script for sp_GetMeetings so it exactly matches your tbl_meetings columns, or you already have that stored procedure created?
 
+
+
+---
+Got it 👍 thanks for clarifying.
+Since you’re using ASP.NET GridView + simple-datatables.js, the header sometimes doesn’t render cleanly (extra <tr> or <th> wrappers). That causes DataTables not to style the header correctly.
+
+By default, GridView adds <thead> only if UseAccessibleHeader="true" is set. Without it, the header is inside <tr> inside <table> without <thead>, which breaks simple-datatables.
+
+
+---
+
+✅ Fix: Add these properties to your GridView
+
+<asp:GridView ID="gvMeetings" runat="server" 
+    CssClass="table table-bordered table-striped"
+    AutoGenerateColumns="False"
+    UseAccessibleHeader="true"
+    HeaderStyle-BackColor="#f8f9fa"
+    HeaderStyle-Font-Bold="true"
+    GridLines="None">
+    <Columns>
+        <asp:BoundField DataField="MeetingID" HeaderText="Meeting ID" />
+        <asp:BoundField DataField="MeetingTitle" HeaderText="Title" />
+        <asp:BoundField DataField="MeetingDate" HeaderText="Date" DataFormatString="{0:MM/dd/yyyy}" />
+        <asp:BoundField DataField="CreatedBy" HeaderText="Created By" />
+        <asp:BoundField DataField="Status" HeaderText="Status" />
+        <asp:BoundField DataField="Location" HeaderText="Location" />
+        <asp:BoundField DataField="Remarks" HeaderText="Remarks" />
+    </Columns>
+</asp:GridView>
+
+
+---
+
+✅ And in CodeBehind (after DataBind):
+
+private void LoadMeetings()
+{
+    string connStr = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+
+    using (SqlConnection conn = new SqlConnection(connStr))
+    {
+        using (SqlCommand cmd = new SqlCommand("sp_GetMeetings", conn))
+        {
+            cmd.CommandType = CommandType.StoredProcedure;
+            SqlDataAdapter da = new SqlDataAdapter(cmd);
+            DataTable dt = new DataTable();
+            da.Fill(dt);
+
+            gvMeetings.DataSource = dt;
+            gvMeetings.DataBind();
+
+            // Ensure GridView renders <thead> for DataTables
+            if (gvMeetings.HeaderRow != null)
+            {
+                gvMeetings.HeaderRow.TableSection = TableRowSection.TableHeader;
+            }
+        }
+    }
+}
+
+
+---
+
+✅ Why this works
+
+UseAccessibleHeader="true" makes GridView output <thead> and <th> tags.
+
+gvMeetings.HeaderRow.TableSection = TableRowSection.TableHeader; ensures the header row is moved inside <thead>.
+
+simple-datatables.js now detects headers properly and applies sorting/search styling.
+
+
+
+---
+
+👉 Do you want me to also adjust the styling (background, bold text, alignment) of your header to match Bootstrap/DataTables look?
+
