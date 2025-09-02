@@ -1057,5 +1057,115 @@ Icon should now be perfectly centered in the navbar like the other menu items.
 Do you want me to also make the icon a bit smaller (fa-md instead of fa-lg) so it visually matches the text links?
 
 
+------
+Got it 👍 You want the Tap In / Tap Out toggle switch using Bootstrap styles, not custom CSS.
+We can use Bootstrap 5 Form Switch to keep it clean and responsive.
+
+Here’s a complete Bootstrap-based ASPX Web Form:
+
+
+---
+
+📄 TapPage.aspx
+
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="TapPage.aspx.cs" Inherits="WebApplication1.TapPage" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="utf-8" />
+    <title>ID Tapping</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body class="container py-5">
+    <form id="form1" runat="server">
+        <div class="card p-4 shadow rounded-3">
+            <h3 class="mb-4">ID Tapping</h3>
+
+            <!-- Bootstrap Toggle -->
+            <div class="form-check form-switch mb-3">
+                <asp:CheckBox ID="chkTapMode" runat="server" CssClass="form-check-input" />
+                <label class="form-check-label" for="chkTapMode" id="lblMode">Tap OUT</label>
+            </div>
+
+            <!-- Input for ID -->
+            <div class="mb-3">
+                <label for="txtID" class="form-label">Enter / Tap ID:</label>
+                <asp:TextBox ID="txtID" runat="server" CssClass="form-control" />
+            </div>
+
+            <!-- Submit Button -->
+            <asp:Button ID="btnTap" runat="server" Text="Tap ID" CssClass="btn btn-primary" OnClick="btnTap_Click" />
+        </div>
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const chkTapMode = document.getElementById('<%= chkTapMode.ClientID %>');
+        const lblMode = document.getElementById("lblMode");
+
+        chkTapMode.addEventListener("change", function () {
+            lblMode.textContent = chkTapMode.checked ? "Tap IN" : "Tap OUT";
+        });
+    </script>
+</body>
+</html>
+
+
+---
+
+📄 TapPage.aspx.cs
+
+using System;
+
+namespace WebApplication1
+{
+    public partial class TapPage : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+        }
+
+        protected void btnTap_Click(object sender, EventArgs e)
+        {
+            string tappedId = txtID.Text.Trim();
+            if (string.IsNullOrEmpty(tappedId))
+            {
+                ClientScript.RegisterStartupScript(this.GetType(), "alert",
+                    "alert('Please enter your ID.');", true);
+                return;
+            }
+
+            // Fake lookup (replace with DB/stored procedure later)
+            string name = "John Doe";
+            string dept = "IT Department";
+            string mode = chkTapMode.Checked ? "Tap IN" : "Tap OUT";
+            string dateTimeNow = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            string message = $"Successfully {mode}!\\nName: {name}\\nDept: {dept}\\nDate/Time: {dateTimeNow}";
+            ClientScript.RegisterStartupScript(this.GetType(), "alert", $"alert('{message}');", true);
+
+            txtID.Text = ""; // clear after tapping
+        }
+    }
+}
+
+
+---
+
+✅ With this:
+
+Bootstrap form-switch is used (native Bootstrap toggle).
+
+Default label shows Tap OUT, when toggled → changes to Tap IN.
+
+Enter ID → press button → alert with Name, Dept, Date/Time, and mode.
+
+
+
+---
+
+Do you also want me to make the alert a Bootstrap toast/alert component inside the page (instead of the JavaScript alert() popup)?
+
 
 
