@@ -1,0 +1,21 @@
+On a quarterly schedule OHG Coefficient is being inputted in GNS+ by Procurement members. The reference value is being provided by Business control based on Accounting calculation result for each EPPI cost center. Accuracy of the inputted data is of the essence for this process since it will affect the pricing of EPPI finished goods. On this process the only role of Procurement is just to input value and make sure the correctness of the inputted value.
+
+Encountered wrong system calculation due to assigned member forgot to input the updated quarterly coefficient value.
+Due to wrong value on system, calculation of labor cost, depreciation, sundry, staff cost, consumable, mold, and procurement cost is not executed.
+VP Production have to stop to adjust and to correct the multiple value.
+
+Total number of hours: 24hrs
+
+ 
+     The current stocktaking process performed on manual operations within the SAP GUI, requiring the system master team to navigate multiple transactions, extract raw data, and format reports manually. This approach is time-consuming and prone to human error, particularly during peak inventory periods. Repetitive tasks and complex reporting requirements further contribute to inefficiencies and delays in report generation.
+
+     To address these challenges, we propose the development of Excel VBA macro functions that automate SAP GUI scripting for stocktaking activities. These macros will improve data extraction, standardize report formatting, and enable the automatic generation of key reports, including:
+Stocktaking Inventory Result
+Stocktaking Summary Report per Plant
+Difference  Posting Check
+Stocktaking Summary Report per Section in charge
+
+This automation aims to reduce manual workload, improve data accuracy, and ensure the timely delivery of reports. It will also provide section in-charges with clearer insights into discrepancies and posting validations, thereby strengthening inventory control and enhancing audit readiness.
+
+
+
