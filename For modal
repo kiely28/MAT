@@ -328,4 +328,190 @@ namespace WebApplication1
 
 Do you also want me to return the inserted Meeting ID from SQL (e.g. show “Meeting 101 saved successfully” in the alert)?
 
+--- 1241PM
+Nice 👍 let’s add Bootstrap Icons (or Font Awesome, since you already included it) to the buttons so they look better.
+
+I’ll keep using Font Awesome because you already linked it.
+
+
+---
+
+🔹 Updated ASPX Page (ModalForm.aspx)
+
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ModalForm.aspx.cs" Inherits="WebApplication1.ModalForm" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="utf-8" />
+    <title>Modal Form</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+</head>
+<body>
+    <form id="form1" runat="server" class="container mt-4">
+
+        <!-- Success Alert -->
+        <asp:Panel ID="pnlSuccess" runat="server" CssClass="alert alert-success d-flex align-items-center alert-dismissible fade show" Visible="false">
+            <i class="fa fa-check-circle me-2"></i>
+            <div>Saved successfully.</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </asp:Panel>
+
+        <!-- Add New Button -->
+        <asp:Button ID="btnAddNew" runat="server" Text=" Add New" CssClass="btn btn-primary mb-3"
+            OnClientClick="resetForm(); showModal(); return false;" />
+
+        <script>
+            // Add icon dynamically since asp:Button doesn't support <i> tag directly
+            window.onload = function () {
+                var btn = document.getElementById('<%= btnAddNew.ClientID %>');
+                if (btn && !btn.innerHTML.includes('fa-plus')) {
+                    btn.innerHTML = '<i class="fa fa-plus me-1"></i>' + btn.innerHTML;
+                }
+            }
+        </script>
+
+        <!-- Modal -->
+        <div class="modal fade" id="addNewModal" tabindex="-1" aria-labelledby="addNewModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addNewModalLabel"><i class="fa fa-calendar-plus me-2"></i>Add New Meeting</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Title</label><span class="req">*</span>
+                                <asp:TextBox ID="txtReportDate" runat="server" CssClass="form-control"></asp:TextBox>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Start Date</label><span class="req">*</span>
+                                <asp:TextBox ID="TextBox1" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Start Time</label><span class="req">*</span>
+                                <asp:TextBox ID="TextBox2" runat="server" CssClass="form-control" TextMode="Time"></asp:TextBox>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">End Date</label><span class="req">*</span>
+                                <asp:TextBox ID="TextBox3" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">End Time</label><span class="req">*</span>
+                                <asp:TextBox ID="TextBox4" runat="server" CssClass="form-control" TextMode="Time"></asp:TextBox>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Location</label><span class="req">*</span>
+                                <asp:TextBox ID="TextBox6" runat="server" CssClass="form-control"></asp:TextBox>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Organizer</label><span class="req">*</span>
+                                <asp:TextBox ID="TextBox5" runat="server" CssClass="form-control"></asp:TextBox>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <!-- Save Button with icon -->
+                        <asp:Button ID="btnSave" runat="server" Text=" Save" CssClass="btn btn-success" OnClick="btnSave_Click" />
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fa fa-times me-1"></i> Close
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function showModal() {
+            var modal = new bootstrap.Modal(document.getElementById('addNewModal'));
+            modal.show();
+        }
+
+        function resetForm() {
+            document.getElementById('<%= txtReportDate.ClientID %>').value = '';
+            document.getElementById('<%= TextBox1.ClientID %>').value = '';
+            document.getElementById('<%= TextBox2.ClientID %>').value = '';
+            document.getElementById('<%= TextBox3.ClientID %>').value = '';
+            document.getElementById('<%= TextBox4.ClientID %>').value = '';
+            document.getElementById('<%= TextBox6.ClientID %>').value = '';
+            document.getElementById('<%= TextBox5.ClientID %>').value = '';
+        }
+
+        function closeModal() {
+            var modalEl = document.getElementById('addNewModal');
+            var modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+        }
+
+        function showSuccessAlert() {
+            var alertBox = document.getElementById('<%= pnlSuccess.ClientID %>');
+            if (alertBox) {
+                alertBox.style.display = 'block';
+                setTimeout(function () {
+                    var bsAlert = new bootstrap.Alert(alertBox);
+                    bsAlert.close();
+                }, 3000); // auto-hide after 3 seconds
+            }
+        }
+
+        // Add FA icon to Save button too
+        window.onload = function () {
+            var addBtn = document.getElementById('<%= btnAddNew.ClientID %>');
+            if (addBtn && !addBtn.innerHTML.includes('fa-plus')) {
+                addBtn.innerHTML = '<i class="fa fa-plus me-1"></i>' + addBtn.innerHTML;
+            }
+
+            var saveBtn = document.getElementById('<%= btnSave.ClientID %>');
+            if (saveBtn && !saveBtn.innerHTML.includes('fa-save')) {
+                saveBtn.innerHTML = '<i class="fa fa-save me-1"></i>' + saveBtn.innerHTML;
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+---
+
+🔹 Effect of Icons
+
+Add New Button → + icon (fa-plus)
+
+Save Button → disk/save icon (fa-save)
+
+Close Button → X icon (fa-times)
+
+Modal Title → calendar-plus icon (fa-calendar-plus)
+
+
+
+---
+
+⚡ Now your buttons look modern with icons.
+
+Do you also want me to change the alert box to include an icon (like a ✅ check-circle inside the green alert)?
+
 
