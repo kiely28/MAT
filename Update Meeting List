@@ -1,0 +1,461 @@
+-- Update SP
+Perfect 👍 thanks for confirming.
+I’ll show you a revised version of your InsertMeeting1 stored procedure with transaction safety so that even if two users create a meeting at the same time, they won’t end up generating the same MeetingId.
+
+Here’s the improved version:
+
+ALTER PROCEDURE [dbo].[InsertMeeting1]
+    @Title NVARCHAR(200),
+    @StartDateTime DATETIME,
+    @EndDateTime DATETIME,
+    @Venue NVARCHAR(100),
+    @Organizer NVARCHAR(100),
+    @CreatedBy NVARCHAR(100),
+    @MeetingId NVARCHAR(50) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        DECLARE @Prefix NVARCHAR(20) = 'MTG-' + FORMAT(GETDATE(), 'yyyyMM') + '-';
+
+        -- Lock the table to prevent race conditions
+        DECLARE @LastSeq INT;
+
+        SELECT @LastSeq = ISNULL(MAX(CAST(RIGHT(MeetingId, 3) AS INT)), 0)
+        FROM Tbl_Meetings WITH (TABLOCKX, HOLDLOCK)
+        WHERE MeetingId LIKE @Prefix + '%';
+
+        DECLARE @NextSeq INT = @LastSeq + 1;
+
+        SET @MeetingId = @Prefix + RIGHT('000' + CAST(@NextSeq AS VARCHAR(3)), 3);
+
+        INSERT INTO Tbl_Meetings 
+            (MeetingId, Title, StartDateTime, EndDateTime, Venue, Organizer, CreatedBy, Status1)
+        VALUES 
+            (@MeetingId, @Title, @StartDateTime, @EndDateTime, @Venue, @Organizer, @CreatedBy, 'Upcoming');
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        -- Rethrow the error so your C# can catch it
+        THROW;
+    END CATCH
+END
+
+
+---
+
+🔑 Key Improvements
+
+1. Transaction (BEGIN TRANSACTION / COMMIT TRANSACTION)
+Ensures the ID generation + insert happens atomically.
+
+
+2. Table lock (WITH (TABLOCKX, HOLDLOCK))
+Prevents other sessions from reading/writing the same prefix range until the transaction finishes → eliminates duplicate MeetingIds.
+
+
+3. Error handling (TRY...CATCH + THROW)
+Rolls back if anything fails, then rethrows so your C# code can show a friendly error.
+
+
+4. SET NOCOUNT ON
+Avoids returning extra (n rows affected) messages, which sometimes interfere with output parameters in ADO.NET.
+
+
+
+
+---
+
+👉 Do you also want me to show you how to catch SQL errors in your C# code-behind (so you can show lblMessage.Text = "Error creating meeting..." instead of a crash)?
+
+-- Update Code Behind 
+Great 👍 I’ll show you how to wrap your database call in a try...catch in C# so any SQL errors (like duplicate key, constraint violation, etc.) are caught and shown gracefully in your Web Forms page.
+
+Here’s the updated btnSave_Click with error handling and a refresh of the meeting list after save:
+
+protected void btnSave_Click(object sender, EventArgs e)
+{
+    string connStr = ConfigurationManager.ConnectionStrings["MeetingDb"].ConnectionString;
+    string meetingId = "";
+    string currentUser = "B014172"; // Later replace with Session["Username"] or User.Identity.Name
+
+    try
+    {
+        using (SqlConnection conn = new SqlConnection(connStr))
+        using (SqlCommand cmd = new SqlCommand("InsertMeeting1", conn))
+        {
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@Title", txtTitle.Text);
+            cmd.Parameters.Add("@StartDateTime", SqlDbType.DateTime).Value = DateTime.Parse(txtStartDateTime.Text);
+            cmd.Parameters.Add("@EndDateTime", SqlDbType.DateTime).Value = DateTime.Parse(txtEndDateTime.Text);
+            cmd.Parameters.AddWithValue("@Venue", txtVenue.Text);
+            cmd.Parameters.AddWithValue("@Organizer", txtOrganizer.Text);
+            cmd.Parameters.AddWithValue("@CreatedBy", currentUser);
+
+            SqlParameter outputParam = new SqlParameter("@MeetingId", SqlDbType.NVarChar, 50)
+            {
+                Direction = ParameterDirection.Output
+            };
+            cmd.Parameters.Add(outputParam);
+
+            conn.Open();
+            cmd.ExecuteNonQuery();
+            conn.Close();
+
+            meetingId = outputParam.Value.ToString();
+
+            // Show success panel
+            pnlSuccess.Visible = true;
+
+            // Refresh grid so new meeting shows up
+            LoadMeetings();
+
+            // Close modal + show success alert
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "saveSuccess",
+                "closeModal(); showSuccessAlert();", true);
+        }
+    }
+    catch (SqlException sqlEx)
+    {
+        // SQL Server error
+        lblMessage.Text = "Database error: " + sqlEx.Message;
+        lblMessage.CssClass = "text-danger fw-bold";
+    }
+    catch (FormatException)
+    {
+        // Handle invalid date format
+        lblMessage.Text = "Invalid date format. Please check Start/End Date fields.";
+        lblMessage.CssClass = "text-danger fw-bold";
+    }
+    catch (Exception ex)
+    {
+        // General error
+        lblMessage.Text = "Unexpected error: " + ex.Message;
+        lblMessage.CssClass = "text-danger fw-bold";
+    }
+}
+
+
+---
+
+🔑 What Changed
+
+1. try...catch with specific exceptions
+
+SqlException → catches SQL Server errors (e.g., constraint violation, duplicate key).
+
+FormatException → if user types invalid date.
+
+Exception → fallback for any other error.
+
+
+
+2. Error shown in lblMessage instead of crashing.
+
+
+3. LoadMeetings(); after successful insert so the new meeting appears immediately in the GridView.
+
+
+4. Safer parameter binding for DateTime instead of AddWithValue → avoids issues if SQL expects datetime.
+
+
+
+
+---
+
+👉 Do you also want me to make the error messages appear inside the modal (e.g., red alert under the form) instead of showing on the page under the table?
+
+-- Required Field Validator with Bootstrap Validation
+Perfect 👍 let’s combine ASP.NET RequiredFieldValidator with Bootstrap 5 validation styling so the user sees both the red error message and the red outline on invalid fields.
+
+Here’s a full example of your Create Meeting modal with both applied:
+
+
+---
+
+✅ ASPX Modal with Combined Validation
+
+<!-- Modal -->
+<div class="modal fade" id="addNewModal" tabindex="-1" aria-labelledby="addNewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addNewModalLabel"><i class="far fa-calendar-plus me-2"></i>Add New Meeting</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Wrap modal body in a form for Bootstrap validation -->
+            <form id="formCreateMeeting" runat="server" class="needs-validation" novalidate>
+                <div class="modal-body">
+                    
+                    <!-- Title -->
+                    <div class="mb-3">
+                        <label class="form-label">Title <span class="text-danger">*</span></label>
+                        <asp:TextBox ID="txtTitle" runat="server" CssClass="form-control" />
+                        <div class="invalid-feedback">Title is required.</div>
+                        <asp:RequiredFieldValidator ID="rfvTitle" runat="server" ControlToValidate="txtTitle"
+                            ErrorMessage="Title is required." CssClass="text-danger" Display="Dynamic"
+                            ValidationGroup="CreateMeeting" />
+                    </div>
+
+                    <!-- Start Date -->
+                    <div class="mb-3">
+                        <label class="form-label">Start Date <span class="text-danger">*</span></label>
+                        <asp:TextBox ID="txtStartDateTime" runat="server" CssClass="form-control" TextMode="DateTimeLocal" />
+                        <div class="invalid-feedback">Start date is required.</div>
+                        <asp:RequiredFieldValidator ID="rfvStartDate" runat="server" ControlToValidate="txtStartDateTime"
+                            ErrorMessage="Start date is required." CssClass="text-danger" Display="Dynamic"
+                            ValidationGroup="CreateMeeting" />
+                    </div>
+
+                    <!-- End Date -->
+                    <div class="mb-3">
+                        <label class="form-label">End Date <span class="text-danger">*</span></label>
+                        <asp:TextBox ID="txtEndDateTime" runat="server" CssClass="form-control" TextMode="DateTimeLocal" />
+                        <div class="invalid-feedback">End date is required.</div>
+                        <asp:RequiredFieldValidator ID="rfvEndDate" runat="server" ControlToValidate="txtEndDateTime"
+                            ErrorMessage="End date is required." CssClass="text-danger" Display="Dynamic"
+                            ValidationGroup="CreateMeeting" />
+                    </div>
+
+                    <!-- Venue -->
+                    <div class="mb-3">
+                        <label class="form-label">Location <span class="text-danger">*</span></label>
+                        <asp:TextBox ID="txtVenue" runat="server" CssClass="form-control" />
+                        <div class="invalid-feedback">Location is required.</div>
+                        <asp:RequiredFieldValidator ID="rfvVenue" runat="server" ControlToValidate="txtVenue"
+                            ErrorMessage="Location is required." CssClass="text-danger" Display="Dynamic"
+                            ValidationGroup="CreateMeeting" />
+                    </div>
+
+                    <!-- Organizer -->
+                    <div class="mb-3">
+                        <label class="form-label">Organizer <span class="text-danger">*</span></label>
+                        <asp:TextBox ID="txtOrganizer" runat="server" CssClass="form-control" />
+                        <div class="invalid-feedback">Organizer is required.</div>
+                        <asp:RequiredFieldValidator ID="rfvOrganizer" runat="server" ControlToValidate="txtOrganizer"
+                            ErrorMessage="Organizer is required." CssClass="text-danger" Display="Dynamic"
+                            ValidationGroup="CreateMeeting" />
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <asp:Button ID="btnSave" runat="server" CssClass="btn btn-primary"
+                        Text="Save" OnClick="btnSave_Click" ValidationGroup="CreateMeeting" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- End Modal -->
+
+
+---
+
+✅ Bootstrap 5 Client-Side Validation Script
+
+Add this at the bottom of your .aspx page (before </body>):
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var forms = document.querySelectorAll(".needs-validation");
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener("submit", function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add("was-validated");
+        }, false);
+    });
+});
+</script>
+
+
+---
+
+🔑 How It Works
+
+ASP.NET RequiredFieldValidator → prevents server-side submission with empty inputs.
+
+Bootstrap validation (invalid-feedback + .was-validated) → gives nice red outlines + error messages immediately on the client side.
+
+Both run together, so even if JavaScript is disabled, the server still validates.
+
+
+
+---
+
+👉 Do you want me to also add a custom validator to check that End Date is not earlier than Start Date inside this modal?
+
+-- Custom Validation: End Date is not earlier in Start Date
+Perfect 👍 let’s add a CustomValidator to make sure the End Date is later than Start Date inside your modal.
+
+This way:
+
+If a user enters an end date before the start date → validation fails.
+
+Both Bootstrap feedback and ASP.NET validation will show the error.
+
+
+
+---
+
+✅ Updated ASPX Modal (with End Date Validation)
+
+<!-- Modal -->
+<div class="modal fade" id="addNewModal" tabindex="-1" aria-labelledby="addNewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addNewModalLabel"><i class="far fa-calendar-plus me-2"></i>Add New Meeting</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="formCreateMeeting" runat="server" class="needs-validation" novalidate>
+                <div class="modal-body">
+
+                    <!-- Title -->
+                    <div class="mb-3">
+                        <label class="form-label">Title <span class="text-danger">*</span></label>
+                        <asp:TextBox ID="txtTitle" runat="server" CssClass="form-control" />
+                        <div class="invalid-feedback">Title is required.</div>
+                        <asp:RequiredFieldValidator ID="rfvTitle" runat="server" ControlToValidate="txtTitle"
+                            ErrorMessage="Title is required." CssClass="text-danger" Display="Dynamic"
+                            ValidationGroup="CreateMeeting" />
+                    </div>
+
+                    <!-- Start Date -->
+                    <div class="mb-3">
+                        <label class="form-label">Start Date <span class="text-danger">*</span></label>
+                        <asp:TextBox ID="txtStartDateTime" runat="server" CssClass="form-control" TextMode="DateTimeLocal" />
+                        <div class="invalid-feedback">Start date is required.</div>
+                        <asp:RequiredFieldValidator ID="rfvStartDate" runat="server" ControlToValidate="txtStartDateTime"
+                            ErrorMessage="Start date is required." CssClass="text-danger" Display="Dynamic"
+                            ValidationGroup="CreateMeeting" />
+                    </div>
+
+                    <!-- End Date -->
+                    <div class="mb-3">
+                        <label class="form-label">End Date <span class="text-danger">*</span></label>
+                        <asp:TextBox ID="txtEndDateTime" runat="server" CssClass="form-control" TextMode="DateTimeLocal" />
+                        <div class="invalid-feedback">End date must be later than Start date.</div>
+                        <asp:RequiredFieldValidator ID="rfvEndDate" runat="server" ControlToValidate="txtEndDateTime"
+                            ErrorMessage="End date is required." CssClass="text-danger" Display="Dynamic"
+                            ValidationGroup="CreateMeeting" />
+                        <asp:CustomValidator ID="cvDateRange" runat="server" 
+                            ControlToValidate="txtEndDateTime"
+                            ErrorMessage="End date must be later than Start date."
+                            CssClass="text-danger" Display="Dynamic"
+                            OnServerValidate="cvDateRange_ServerValidate"
+                            ClientValidationFunction="validateDateRange"
+                            ValidationGroup="CreateMeeting" />
+                    </div>
+
+                    <!-- Venue -->
+                    <div class="mb-3">
+                        <label class="form-label">Location <span class="text-danger">*</span></label>
+                        <asp:TextBox ID="txtVenue" runat="server" CssClass="form-control" />
+                        <div class="invalid-feedback">Location is required.</div>
+                        <asp:RequiredFieldValidator ID="rfvVenue" runat="server" ControlToValidate="txtVenue"
+                            ErrorMessage="Location is required." CssClass="text-danger" Display="Dynamic"
+                            ValidationGroup="CreateMeeting" />
+                    </div>
+
+                    <!-- Organizer -->
+                    <div class="mb-3">
+                        <label class="form-label">Organizer <span class="text-danger">*</span></label>
+                        <asp:TextBox ID="txtOrganizer" runat="server" CssClass="form-control" />
+                        <div class="invalid-feedback">Organizer is required.</div>
+                        <asp:RequiredFieldValidator ID="rfvOrganizer" runat="server" ControlToValidate="txtOrganizer"
+                            ErrorMessage="Organizer is required." CssClass="text-danger" Display="Dynamic"
+                            ValidationGroup="CreateMeeting" />
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <asp:Button ID="btnSave" runat="server" CssClass="btn btn-primary"
+                        Text="Save" OnClick="btnSave_Click" ValidationGroup="CreateMeeting" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+---
+
+✅ JavaScript Client-Side Validator
+
+Add this script at the bottom of your page:
+
+<script>
+function validateDateRange(sender, args) {
+    var startDate = document.getElementById("<%= txtStartDateTime.ClientID %>").value;
+    var endDate = document.getElementById("<%= txtEndDateTime.ClientID %>").value;
+
+    if (startDate && endDate) {
+        var start = new Date(startDate);
+        var end = new Date(endDate);
+        args.IsValid = (end > start);
+    } else {
+        args.IsValid = true; // let required validators handle empty fields
+    }
+}
+</script>
+
+
+---
+
+✅ Code-Behind Server-Side Validator
+
+In your .aspx.cs:
+
+protected void cvDateRange_ServerValidate(object source, ServerValidateEventArgs args)
+{
+    DateTime start, end;
+    if (DateTime.TryParse(txtStartDateTime.Text, out start) &&
+        DateTime.TryParse(txtEndDateTime.Text, out end))
+    {
+        args.IsValid = end > start;
+    }
+    else
+    {
+        args.IsValid = true; // RequiredFieldValidator handles empty values
+    }
+}
+
+
+---
+
+🔑 Behavior
+
+If End Date < Start Date → error shown in red text + red input border.
+
+If inputs are empty → handled by RequiredFieldValidator instead.
+
+Works client-side (JS) for instant feedback + server-side (C#) for safety.
+
+
+
+---
+
+👉 Do you also want me to add a validation summary panel (Bootstrap alert) at the top of the modal that shows all validation errors together, not just under each field?
+
+
