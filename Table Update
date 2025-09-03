@@ -1,0 +1,170 @@
+Perfect 👍 You want to drop asp:GridView (Web Forms control) and instead use a plain HTML <table> styled with Bootstrap + DataTables, while still binding the data from SQL Server in your code-behind. That way, your existing JS (simple-datatables.js, datatables-simple-demo.js, etc.) can take over.
+
+Here’s a complete working example.
+
+
+---
+
+MeetingsList.aspx
+
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="MeetingsList.aspx.cs" Inherits="WebApplication1_MAL.MeetingsList" %>
+
+<!DOCTYPE html>
+<html>
+<head runat="server">
+    <title>My Upcoming Meetings</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Your existing JS/CSS -->
+    <script src="js/jquery-3.2.0.min.js"></script>
+    <script src="js/all.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/scripts.js"></script>
+    <script src="js/simple-datatables.js"></script>
+    <script src="js/datatables-simple-demo.js"></script>
+</head>
+<body>
+    <form id="form1" runat="server" class="container mt-4">
+
+        <h2 class="mb-4">My Upcoming Meetings</h2>
+        <a href="CreateMeeting.aspx" class="btn btn-primary mb-3">Add New Meeting</a>
+
+        <!-- Normal HTML table -->
+        <table id="meetingsTable" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Meeting ID</th>
+                    <th>Title</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Venue</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody runat="server" id="tblBody">
+                <!-- Rows will be added dynamically from code-behind -->
+            </tbody>
+        </table>
+
+        <asp:Label ID="lblMessage" runat="server" CssClass="text-danger fw-bold"></asp:Label>
+
+    </form>
+</body>
+</html>
+
+
+---
+
+MeetingsList.aspx.cs
+
+using System;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
+using System.Text;
+using System.Web.UI;
+
+namespace WebApplication1_MAL
+{
+    public partial class MeetingsList : Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                LoadMeetings();
+            }
+        }
+
+        private void LoadMeetings()
+        {
+            string connStr = ConfigurationManager.ConnectionStrings["MeetingDb"].ConnectionString;
+            string currentUser = Session["Username"]?.ToString();
+
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("GetUserMeetings", conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@CreatedBy", currentUser);
+
+                using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                {
+                    DataTable dt = new DataTable();
+                    da.Fill(dt);
+
+                    if (dt.Rows.Count > 0)
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        foreach (DataRow row in dt.Rows)
+                        {
+                            string meetingId = row["MeetingId"].ToString();
+                            string title = row["Title"].ToString();
+                            string startDate = Convert.ToDateTime(row["StartDate"]).ToString("yyyy-MM-dd HH:mm");
+                            string endDate = Convert.ToDateTime(row["EndDate"]).ToString("yyyy-MM-dd HH:mm");
+                            string venue = row["Venue"].ToString();
+                            string status = row["Status"].ToString();
+
+                            sb.Append("<tr>");
+                            sb.AppendFormat("<td>{0}</td>", meetingId);
+                            sb.AppendFormat("<td>{0}</td>", title);
+                            sb.AppendFormat("<td>{0}</td>", startDate);
+                            sb.AppendFormat("<td>{0}</td>", endDate);
+                            sb.AppendFormat("<td>{0}</td>", venue);
+                            sb.AppendFormat("<td>{0}</td>", status);
+                            sb.Append("<td>");
+                            sb.AppendFormat("<a href='meetingattendance.aspx?meetingId={0}' class='btn btn-success btn-sm me-1'>Start</a>", meetingId);
+                            sb.AppendFormat("<a href='EditMeeting.aspx?meetingId={0}' class='btn btn-warning btn-sm me-1'>Edit</a>", meetingId);
+                            sb.AppendFormat("<a href='DeleteMeeting.aspx?meetingId={0}' class='btn btn-danger btn-sm' onclick='return confirm(\"Are you sure you want to delete this meeting?\");'>Delete</a>", meetingId);
+                            sb.Append("</td>");
+                            sb.Append("</tr>");
+                        }
+
+                        tblBody.InnerHtml = sb.ToString();
+                    }
+                    else
+                    {
+                        lblMessage.Text = "No upcoming meetings found.";
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+---
+
+What Changed
+
+1. ✅ Removed <asp:GridView>
+→ Now using plain <table> with <tbody runat="server">.
+
+
+2. ✅ Server-side builds HTML rows dynamically (StringBuilder) inside LoadMeetings().
+
+
+3. ✅ Action buttons (Start, Edit, Delete) are now links instead of server controls:
+
+Start → goes to meetingattendance.aspx
+
+Edit → goes to EditMeeting.aspx
+
+Delete → goes to DeleteMeeting.aspx (you can implement deletion logic there)
+
+
+
+4. ✅ Your existing JS (DataTables) can take over formatting, searching, pagination.
+
+
+
+
+---
+
+👉 This way, your ASP.NET code-behind still fetches data from SQL, but rendering is done as static HTML, so simple-datatables.js works naturally.
+
+
+---
+
+Do you want me to also give you a DeleteMeeting.aspx code-behind page** (so that the Delete button actually calls your stored procedure like before)?
+
