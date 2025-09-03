@@ -459,3 +459,4 @@ Works client-side (JS) for instant feedback + server-side (C#) for safety.
 👉 Do you also want me to add a validation summary panel (Bootstrap alert) at the top of the modal that shows all validation errors together, not just under each field?
 
 
+-- Edit Modal Function
