@@ -1,0 +1,130 @@
+Perfect 👍 Let’s fix your modal footer + save logic so that:
+
+1. The Save button actually calls your btnSave_Click.
+
+
+2. The date + time fields are combined into proper DateTime before saving.
+
+
+
+
+---
+
+🔹 Updated Modal Footer
+
+Replace this part in your ASPX:
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+        <i class="fas fa-times"></i> Cancel
+    </button>
+    <div>
+        <asp:Literal ID="litSaveButton" runat="server" 
+            Text="<button class='btn btn-primary'><i class='fas fa-check'></i> Save</button>" />
+    </div>
+</div>
+
+✅ With this:
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+        <i class="fas fa-times"></i> Cancel
+    </button>
+    <asp:Button ID="btnSave" runat="server" CssClass="btn btn-primary"
+        OnClick="btnSave_Click" Text="Save" UseSubmitBehavior="false" />
+</div>
+
+
+---
+
+🔹 Updated Code-Behind (btnSave_Click)
+
+Change your existing method:
+
+protected void btnSave_Click(object sender, EventArgs e)
+{
+    string connStr = ConfigurationManager.ConnectionStrings["MeetingDb"].ConnectionString;
+
+    using (SqlConnection conn = new SqlConnection(connStr))
+    using (SqlCommand cmd = new SqlCommand("InsertMeeting3", conn))
+    {
+        cmd.CommandType = CommandType.StoredProcedure;
+
+        cmd.Parameters.AddWithValue("@Title", txtReportDate.Text.Trim());
+        cmd.Parameters.AddWithValue("@StartDate", TextBox1.Text);
+        cmd.Parameters.AddWithValue("@StartTime", TextBox2.Text);
+        cmd.Parameters.AddWithValue("@EndDate", TextBox3.Text);
+        cmd.Parameters.AddWithValue("@EndTime", TextBox4.Text);
+        cmd.Parameters.AddWithValue("@Venue", TextBox6.Text.Trim());
+        cmd.Parameters.AddWithValue("@Organizer", TextBox5.Text.Trim());
+
+        conn.Open();
+        cmd.ExecuteNonQuery();
+    }
+
+    pnlSuccess.Visible = true;
+
+    // Close modal + show success alert
+    ScriptManager.RegisterStartupScript(this, this.GetType(), "saveSuccess",
+        "closeModal(); showSuccessAlert();", true);
+}
+
+✅ Replace with:
+
+protected void btnSave_Click(object sender, EventArgs e)
+{
+    try
+    {
+        string connStr = ConfigurationManager.ConnectionStrings["MeetingDb"].ConnectionString;
+
+        // Combine Date + Time inputs
+        DateTime startDateTime = DateTime.Parse($"{TextBox1.Text} {TextBox2.Text}");
+        DateTime endDateTime = DateTime.Parse($"{TextBox3.Text} {TextBox4.Text}");
+
+        using (SqlConnection conn = new SqlConnection(connStr))
+        using (SqlCommand cmd = new SqlCommand("InsertMeeting3", conn))
+        {
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@Title", txtReportDate.Text.Trim());
+            cmd.Parameters.AddWithValue("@StartDate", startDateTime);
+            cmd.Parameters.AddWithValue("@EndDate", endDateTime);
+            cmd.Parameters.AddWithValue("@Venue", TextBox6.Text.Trim());
+            cmd.Parameters.AddWithValue("@Organizer", TextBox5.Text.Trim());
+
+            conn.Open();
+            cmd.ExecuteNonQuery();
+        }
+
+        pnlSuccess.Visible = true;
+
+        // Refresh Grid
+        LoadMeetings();
+
+        // Close modal + show success alert
+        ScriptManager.RegisterStartupScript(this, this.GetType(), "saveSuccess",
+            "closeModal(); showSuccessAlert();", true);
+    }
+    catch (Exception ex)
+    {
+        lblMessage.Text = "Error saving meeting: " + ex.Message;
+    }
+}
+
+
+---
+
+✅ What changed:
+
+asp:Literal → asp:Button so your event fires.
+
+Combined Date + Time → DateTime before saving.
+
+Added error handling (try/catch) and grid refresh after saving.
+
+
+
+---
+
+Do you also want me to update your stored procedure InsertMeeting3 so it accepts a single @StartDate and @EndDate instead of separate Date and Time parameters?
+
