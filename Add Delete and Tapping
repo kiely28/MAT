@@ -555,3 +555,85 @@ User taps/enters card → attendance saved (no duplicate).
 
 
 
+-----
+Highlight Datatables
+Got it 👍 You want to highlight the StartDate column in your DataTable based on rules:
+
+Default color → if the meeting date is still upcoming.
+
+Yellow (warning) → if it’s late (meeting already started, status still Scheduled).
+
+Red (danger) → if it’s missed (meeting already passed, status still Scheduled).
+
+
+We can do this with DataTables createdRow or column render + Bootstrap classes.
+
+
+---
+
+🟦 Example JavaScript (DataTables with Bootstrap classes)
+
+$('#meetingsTable').DataTable({
+    "createdRow": function (row, data, dataIndex) {
+        // Assuming StartDate is column index 2 and Status is column index 4
+        var startDate = new Date(data[2]); 
+        var status = data[4];
+        var now = new Date();
+
+        if (status === "Scheduled") {
+            if (startDate < now) {
+                // Meeting time passed but still scheduled → missed
+                $('td', row).eq(2).addClass('text-white bg-danger'); 
+            } else if (startDate.toDateString() === now.toDateString() &&
+                       startDate <= now) {
+                // Meeting started today but still scheduled → late
+                $('td', row).eq(2).addClass('text-dark bg-warning');
+            }
+        }
+    }
+});
+
+
+---
+
+🟦 How It Works
+
+data[2] → column where StartDate is located.
+
+data[4] → column where Status is located.
+
+Compares StartDate vs now.
+
+Applies Bootstrap classes:
+
+bg-warning (yellow),
+
+bg-danger text-white (red).
+
+
+
+
+---
+
+🟦 If You Want More Granularity
+
+Instead of just checking if < now, you can add tolerance for "late" (e.g., within 30 minutes). Example:
+
+var diffMinutes = (now - startDate) / (1000 * 60);
+
+if (status === "Scheduled") {
+    if (diffMinutes > 60) {
+        // More than 1 hour late → missed
+        $('td', row).eq(2).addClass('text-white bg-danger');
+    } else if (diffMinutes > 0) {
+        // Within 1 hour → late
+        $('td', row).eq(2).addClass('text-dark bg-warning');
+    }
+}
+
+
+---
+
+👉 Do you want me to make this dynamic so that the row color updates automatically every minute (without refreshing the page), or just color it once when the table loads?
+
+
