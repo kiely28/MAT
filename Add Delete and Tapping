@@ -1,0 +1,557 @@
+-----
+Alert - Panel Success
+
+Got it 👍 Your <asp:Panel ID="pnlSuccess"> works for showing the success message, but it won’t auto-hide on its own — we need to add a small JavaScript snippet to fade it out after 3 seconds.
+
+Here’s how to fix it:
+
+
+---
+
+✅ In your ASPX (markup)
+
+Make sure your panel looks like this (Bootstrap alert):
+
+<asp:Panel ID="pnlSuccess" runat="server" CssClass="alert alert-success alert-dismissible fade show" Visible="false">
+    <i class="fas fa-check-circle me-2"></i> Saved successfully!
+</asp:Panel>
+
+
+---
+
+✅ In your Code-Behind (C#)
+
+When you want to show it, register a script that auto-hides it after 3s:
+
+protected void ShowSuccessMessage(string message)
+{
+    pnlSuccess.Visible = true;
+    pnlSuccess.Controls.Clear();
+    pnlSuccess.Controls.Add(new Literal { Text = $"<i class='fas fa-check-circle me-2'></i> {message}" });
+
+    string script = @"
+        setTimeout(function() {
+            var alert = document.getElementById('" + pnlSuccess.ClientID + @"');
+            if (alert) {
+                alert.classList.remove('show');
+                alert.classList.add('fade');
+                setTimeout(function() { alert.style.display = 'none'; }, 500);
+            }
+        }, 3000);";
+
+    ScriptManager.RegisterStartupScript(this, GetType(), "HideAlert", script, true);
+}
+
+
+---
+
+✅ How to use
+
+In your btnSave_Click or btnUpdate_Click handlers, just call:
+
+ShowSuccessMessage("Meeting saved successfully!");
+
+or
+
+ShowSuccessMessage("Meeting updated successfully!");
+
+
+---
+
+This way:
+
+The panel appears immediately.
+
+After 3 seconds, it fades out smoothly.
+
+Finally, it’s removed from the screen.
+
+
+
+---
+
+👉 Do you want me to also add the auto-hide success alert logic inside your existing btnSave_Click and btnUpdate_Click handlers so you can copy-paste directly?
+
+------
+
+Delete Function
+
+Perfect 👍 we’ll add a Delete Confirmation Modal with:
+
+A popup "Are you sure you want to delete?"
+
+If confirmed → update the record (Status = 'Deleted') in tbl_meetings using your stored procedure.
+
+Show a success alert (pnlSuccess) that auto-hides after 3s (like we already set up).
+
+
+
+---
+
+🟦 Step 1: Add Delete Modal in ASPX
+
+Place this once in your page, below your other modals:
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteMeetingModal" tabindex="-1" aria-labelledby="deleteMeetingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-trash-alt me-2"></i>Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <asp:HiddenField ID="hfDeleteMeetingId" runat="server" />
+                <p>Are you sure you want to delete this meeting?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <asp:Button ID="btnConfirmDelete" runat="server" CssClass="btn btn-danger"
+                    Text="Yes, Delete" OnClick="btnConfirmDelete_Click" />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+---
+
+🟦 Step 2: Add Delete Button in Your Table
+
+In your DataTable row (View/Edit/Delete buttons), make the Delete button trigger this modal:
+
+<button class="btn btn-sm btn-danger" 
+        onclick="openDeleteModal('<%# Eval("MeetingID") %>')">
+    <i class="fas fa-trash-alt"></i>
+</button>
+
+
+---
+
+🟦 Step 3: Add JavaScript to Open Modal
+
+<script>
+    function openDeleteModal(meetingId) {
+        document.getElementById('<%= hfDeleteMeetingId.ClientID %>').value = meetingId;
+        var myModal = new bootstrap.Modal(document.getElementById('deleteMeetingModal'));
+        myModal.show();
+    }
+</script>
+
+
+---
+
+🟦 Step 4: Code-Behind (C#)
+
+In your meetinglist1.aspx.cs:
+
+protected void btnConfirmDelete_Click(object sender, EventArgs e)
+{
+    int meetingId = int.Parse(hfDeleteMeetingId.Value);
+
+    string connStr = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+    using (SqlConnection conn = new SqlConnection(connStr))
+    using (SqlCommand cmd = new SqlCommand("sp_UpdateMeetingStatus", conn))
+    {
+        cmd.CommandType = CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@MeetingID", meetingId);
+        cmd.Parameters.AddWithValue("@Status", "Deleted");
+
+        conn.Open();
+        cmd.ExecuteNonQuery();
+    }
+
+    // Refresh grid
+    BindMeetings();
+
+    // Show success alert
+    ShowSuccessMessage("Meeting deleted successfully!");
+}
+
+
+---
+
+🟦 Step 5: Stored Procedure for Soft Delete
+
+If not created yet, here’s a simple one:
+
+CREATE PROCEDURE sp_UpdateMeetingStatus
+    @MeetingID INT,
+    @Status NVARCHAR(50)
+AS
+BEGIN
+    UPDATE tbl_meetings
+    SET Status = @Status
+    WHERE MeetingID = @MeetingID;
+END
+
+
+---
+
+✅ Flow now:
+
+Click Delete → modal asks confirmation.
+
+Click Yes, Delete → updates tbl_meetings.Status = 'Deleted'.
+
+Grid reloads and pnlSuccess shows “Meeting deleted successfully!”, auto-hiding after 3s.
+
+
+
+---
+
+Would you like me to also filter your BindMeetings() so that it hides deleted meetings automatically from the table (so they don’t reappear unless you want an archive view)?
+
+----
+
+Tapping Function
+Nice ✨ let’s add a View → Start Meeting modal that:
+
+Pops up "Do you want to start this meeting?"
+
+If confirmed → update tbl_meetings.Status = 'Ongoing'
+
+Then redirect to meetingattendance.aspx?MeetingID=...
+
+
+
+---
+
+🟦 Step 1: Add Start Meeting Modal in ASPX
+
+Place this after your Delete Modal:
+
+<!-- Start Meeting Modal -->
+<div class="modal fade" id="startMeetingModal" tabindex="-1" aria-labelledby="startMeetingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-play-circle me-2"></i>Start Meeting</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <asp:HiddenField ID="hfStartMeetingId" runat="server" />
+                <p>Are you sure you want to start this meeting?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <asp:Button ID="btnConfirmStart" runat="server" CssClass="btn btn-primary"
+                    Text="Yes, Start" OnClick="btnConfirmStart_Click" />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+---
+
+🟦 Step 2: Add "View / Start" Button in Table
+
+In your DataTable action column:
+
+<button class="btn btn-sm btn-info" 
+        onclick="openStartModal('<%# Eval("MeetingID") %>')">
+    <i class="fas fa-play"></i>
+</button>
+
+
+---
+
+🟦 Step 3: JavaScript to Open Modal
+
+<script>
+    function openStartModal(meetingId) {
+        document.getElementById('<%= hfStartMeetingId.ClientID %>').value = meetingId;
+        var myModal = new bootstrap.Modal(document.getElementById('startMeetingModal'));
+        myModal.show();
+    }
+</script>
+
+
+---
+
+🟦 Step 4: Code-Behind (C#)
+
+In meetinglist1.aspx.cs:
+
+protected void btnConfirmStart_Click(object sender, EventArgs e)
+{
+    int meetingId = int.Parse(hfStartMeetingId.Value);
+
+    string connStr = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+    using (SqlConnection conn = new SqlConnection(connStr))
+    using (SqlCommand cmd = new SqlCommand("sp_UpdateMeetingStatus", conn))
+    {
+        cmd.CommandType = CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@MeetingID", meetingId);
+        cmd.Parameters.AddWithValue("@Status", "Ongoing");
+
+        conn.Open();
+        cmd.ExecuteNonQuery();
+    }
+
+    // Redirect to meeting attendance page with MeetingID
+    Response.Redirect($"meetingattendance.aspx?MeetingID={meetingId}");
+}
+
+
+---
+
+🟦 Step 5: Stored Procedure (same as delete)
+
+Already made earlier:
+
+CREATE PROCEDURE sp_UpdateMeetingStatus
+    @MeetingID INT,
+    @Status NVARCHAR(50)
+AS
+BEGIN
+    UPDATE tbl_meetings
+    SET Status = @Status
+    WHERE MeetingID = @MeetingID;
+END
+
+
+---
+
+✅ Flow now:
+
+1. User clicks View (Start).
+
+
+2. Modal asks confirmation.
+
+
+3. If confirmed → sets Status = Ongoing.
+
+
+4. Redirects to meetingattendance.aspx with MeetingID.
+
+
+
+
+---
+
+👉 Do you want me to also make meetingattendance.aspx read the MeetingID from query string and display meeting info at the top (title, venue, datetime) before attendance tapping starts?
+
+-----
+Tapping Version2
+
+Perfect 🚀 we’ll build meetingattendance.aspx so that when you land on it:
+
+It reads the MeetingID from the query string (?MeetingID=...).
+
+Loads the meeting Title, Venue, Date/Time from tbl_meetings.
+
+Displays them in a nice Bootstrap card header.
+
+Provides a textbox for Card Serial No. input (for tapping).
+
+(Later we can expand to save attendance logs).
+
+
+
+---
+
+🟦 Step 1: meetingattendance.aspx (markup)
+
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="meetingattendance.aspx.cs" Inherits="WebApplication1_MAL.meetingattendance" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="utf-8" />
+    <title>Meeting Attendance</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/all.min.css" rel="stylesheet" />
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div class="container mt-4">
+
+            <!-- Meeting Details Card -->
+            <div class="card shadow-lg mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-users me-2"></i> Meeting Attendance</h4>
+                </div>
+                <div class="card-body">
+                    <h5><asp:Label ID="lblTitle" runat="server" /></h5>
+                    <p class="mb-1"><strong>Venue:</strong> <asp:Label ID="lblVenue" runat="server" /></p>
+                    <p class="mb-1"><strong>Start:</strong> <asp:Label ID="lblStart" runat="server" /></p>
+                    <p><strong>End:</strong> <asp:Label ID="lblEnd" runat="server" /></p>
+                </div>
+            </div>
+
+            <!-- Tapping Area -->
+            <div class="card shadow-lg">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-id-card me-2"></i> Tap Your ID</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Card Serial Number</label>
+                        <asp:TextBox ID="txtCardSerialNo" runat="server" CssClass="form-control" 
+                                     placeholder="Tap or Enter Card Serial No." AutoPostBack="true" 
+                                     OnTextChanged="txtCardSerialNo_TextChanged"></asp:TextBox>
+                    </div>
+
+                    <asp:Panel ID="pnlSuccess" runat="server" CssClass="alert alert-success fade show" Visible="false">
+                        <i class="fas fa-check-circle me-2"></i> Attendance logged successfully!
+                    </asp:Panel>
+                </div>
+            </div>
+        </div>
+
+        <script src="js/bootstrap.bundle.min.js"></script>
+        <script src="js/all.min.js"></script>
+    </form>
+</body>
+</html>
+
+
+---
+
+🟦 Step 2: meetingattendance.aspx.cs (code-behind)
+
+using System;
+using System.Configuration;
+using System.Data.SqlClient;
+
+namespace WebApplication1_MAL
+{
+    public partial class meetingattendance : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                int meetingId;
+                if (int.TryParse(Request.QueryString["MeetingID"], out meetingId))
+                {
+                    LoadMeetingDetails(meetingId);
+                    ViewState["MeetingID"] = meetingId;
+                }
+                else
+                {
+                    Response.Redirect("meetinglist1.aspx"); // fallback
+                }
+            }
+        }
+
+        private void LoadMeetingDetails(int meetingId)
+        {
+            string connStr = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("SELECT Title, Venue, StartDateTime, EndDateTime FROM tbl_meetings WHERE MeetingID = @MeetingID", conn))
+            {
+                cmd.Parameters.AddWithValue("@MeetingID", meetingId);
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    lblTitle.Text = reader["Title"].ToString();
+                    lblVenue.Text = reader["Venue"].ToString();
+                    lblStart.Text = Convert.ToDateTime(reader["StartDateTime"]).ToString("g");
+                    lblEnd.Text = Convert.ToDateTime(reader["EndDateTime"]).ToString("g");
+                }
+            }
+        }
+
+        protected void txtCardSerialNo_TextChanged(object sender, EventArgs e)
+        {
+            if (ViewState["MeetingID"] != null)
+            {
+                int meetingId = (int)ViewState["MeetingID"];
+                string cardSerial = txtCardSerialNo.Text.Trim();
+
+                if (!string.IsNullOrEmpty(cardSerial))
+                {
+                    SaveAttendance(meetingId, cardSerial);
+                    ShowSuccessMessage("Attendance logged successfully!");
+                    txtCardSerialNo.Text = ""; // reset for next tap
+                }
+            }
+        }
+
+        private void SaveAttendance(int meetingId, string cardSerial)
+        {
+            string connStr = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("sp_SaveAttendance", conn))
+            {
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@MeetingID", meetingId);
+                cmd.Parameters.AddWithValue("@CardSerialNo", cardSerial);
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        private void ShowSuccessMessage(string message)
+        {
+            pnlSuccess.Visible = true;
+            pnlSuccess.Controls.Clear();
+            pnlSuccess.Controls.Add(new System.Web.UI.LiteralControl($"<i class='fas fa-check-circle me-2'></i> {message}"));
+
+            string script = @"
+                setTimeout(function() {
+                    var alert = document.getElementById('" + pnlSuccess.ClientID + @"');
+                    if (alert) {
+                        alert.classList.remove('show');
+                        alert.classList.add('fade');
+                        setTimeout(function() { alert.style.display = 'none'; }, 500);
+                    }
+                }, 3000);";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "HideAlert", script, true);
+        }
+    }
+}
+
+
+---
+
+🟦 Step 3: Stored Procedure for Attendance
+
+Here’s a simple version you can extend later:
+
+CREATE PROCEDURE sp_SaveAttendance
+    @MeetingID INT,
+    @CardSerialNo NVARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Prevent duplicate attendance for the same meeting
+    IF NOT EXISTS (SELECT 1 FROM tbl_attendance WHERE MeetingID = @MeetingID AND CardSerialNo = @CardSerialNo)
+    BEGIN
+        INSERT INTO tbl_attendance (MeetingID, CardSerialNo, AttendanceDateTime)
+        VALUES (@MeetingID, @CardSerialNo, GETDATE());
+    END
+END
+
+
+---
+
+✅ Flow now:
+
+Open meetingattendance.aspx?MeetingID=5
+
+Shows Title, Venue, DateTime.
+
+User taps/enters card → attendance saved (no duplicate).
+
+✅ Success alert auto-hides after 3s.
+
+
+
+---
+
+👉 Do you also want me to make the success alert include the user’s name + department (from tbl_users linked by CardSerialNo) instead of just saying “Attendance logged successfully”?
+
+
+
