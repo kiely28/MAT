@@ -460,3 +460,169 @@ Works client-side (JS) for instant feedback + server-side (C#) for safety.
 
 
 -- Edit Modal Function
+
+
+-- Update Error Form Tag
+Perfect 👍 I’ll give you the cleaned-up full markup for both Add New Meeting and Edit Meeting modals.
+These versions:
+
+✅ Remove the extra <form runat="server"> (fixes the error).
+
+✅ Keep all fields inside the main <form id="form1" runat="server">.
+
+✅ Add ASP.NET RequiredFieldValidator for validation.
+
+✅ Buttons trigger your server-side methods (btnSave_Click and btnUpdate_Click).
+
+
+
+---
+
+🟦 Add New Meeting Modal (fixed + validation)
+
+<!-- Add New Meeting Modal -->
+<div class="modal fade" id="addNewModal" tabindex="-1" aria-labelledby="addNewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="far fa-calendar-plus me-2"></i>Add New Meeting</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Title</label>
+                    <asp:TextBox ID="txtTitle" runat="server" CssClass="form-control"></asp:TextBox>
+                    <asp:RequiredFieldValidator ID="rfvTitle" runat="server"
+                        ControlToValidate="txtTitle" ErrorMessage="Title is required"
+                        CssClass="text-danger" Display="Dynamic" />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Start Date</label>
+                        <asp:TextBox ID="txtStartDateTime" runat="server" CssClass="form-control" TextMode="DateTimeLocal"></asp:TextBox>
+                        <asp:RequiredFieldValidator ID="rfvStart" runat="server"
+                            ControlToValidate="txtStartDateTime" ErrorMessage="Start Date is required"
+                            CssClass="text-danger" Display="Dynamic" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">End Date</label>
+                        <asp:TextBox ID="txtEndDateTime" runat="server" CssClass="form-control" TextMode="DateTimeLocal"></asp:TextBox>
+                        <asp:RequiredFieldValidator ID="rfvEnd" runat="server"
+                            ControlToValidate="txtEndDateTime" ErrorMessage="End Date is required"
+                            CssClass="text-danger" Display="Dynamic" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Location</label>
+                    <asp:TextBox ID="txtVenue" runat="server" CssClass="form-control"></asp:TextBox>
+                    <asp:RequiredFieldValidator ID="rfvVenue" runat="server"
+                        ControlToValidate="txtVenue" ErrorMessage="Location is required"
+                        CssClass="text-danger" Display="Dynamic" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Organizer</label>
+                    <asp:TextBox ID="txtOrganizer" runat="server" CssClass="form-control"></asp:TextBox>
+                    <asp:RequiredFieldValidator ID="rfvOrganizer" runat="server"
+                        ControlToValidate="txtOrganizer" ErrorMessage="Organizer is required"
+                        CssClass="text-danger" Display="Dynamic" />
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <asp:Button ID="btnSave" runat="server" CssClass="btn btn-primary"
+                    OnClick="btnSave_Click" Text="Save" />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+---
+
+🟦 Edit Meeting Modal (fixed + validation)
+
+<!-- Edit Meeting Modal -->
+<div class="modal fade" id="editMeetingModal" tabindex="-1" aria-labelledby="editMeetingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Edit Meeting</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <asp:HiddenField ID="hfEditMeetingId" runat="server" />
+
+                <div class="mb-3">
+                    <label class="form-label">Title</label>
+                    <asp:TextBox ID="txtEditTitle" runat="server" CssClass="form-control"></asp:TextBox>
+                    <asp:RequiredFieldValidator ID="rfvEditTitle" runat="server"
+                        ControlToValidate="txtEditTitle" ErrorMessage="Title is required"
+                        CssClass="text-danger" Display="Dynamic" />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Start Date</label>
+                        <asp:TextBox ID="txtEditStartDate" runat="server" CssClass="form-control" TextMode="DateTimeLocal"></asp:TextBox>
+                        <asp:RequiredFieldValidator ID="rfvEditStart" runat="server"
+                            ControlToValidate="txtEditStartDate" ErrorMessage="Start Date is required"
+                            CssClass="text-danger" Display="Dynamic" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">End Date</label>
+                        <asp:TextBox ID="txtEditEndDate" runat="server" CssClass="form-control" TextMode="DateTimeLocal"></asp:TextBox>
+                        <asp:RequiredFieldValidator ID="rfvEditEnd" runat="server"
+                            ControlToValidate="txtEditEndDate" ErrorMessage="End Date is required"
+                            CssClass="text-danger" Display="Dynamic" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Location</label>
+                    <asp:TextBox ID="txtEditVenue" runat="server" CssClass="form-control"></asp:TextBox>
+                    <asp:RequiredFieldValidator ID="rfvEditVenue" runat="server"
+                        ControlToValidate="txtEditVenue" ErrorMessage="Location is required"
+                        CssClass="text-danger" Display="Dynamic" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Organizer</label>
+                    <asp:TextBox ID="txtEditOrganizer" runat="server" CssClass="form-control"></asp:TextBox>
+                    <asp:RequiredFieldValidator ID="rfvEditOrganizer" runat="server"
+                        ControlToValidate="txtEditOrganizer" ErrorMessage="Organizer is required"
+                        CssClass="text-danger" Display="Dynamic" />
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <asp:Button ID="btnUpdate" runat="server" CssClass="btn btn-success"
+                    OnClick="btnUpdate_Click" Text="Update" />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+---
+
+✅ Now both modals are inside the main <form runat="server"> of your page, so the error is gone.
+✅ ASP.NET validators ensure the user cannot submit empty inputs.
+✅ Buttons (btnSave, btnUpdate) trigger your C# event handlers as before.
+
+
+---
+
+Do you also want me to add client-side Bootstrap validation styles (red border + tooltip) so it looks more modern, or keep the classic ASP.NET validator messages?
+
+
