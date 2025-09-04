@@ -461,6 +461,222 @@ Works client-side (JS) for instant feedback + server-side (C#) for safety.
 
 -- Edit Modal Function
 
+Nice 👍 now we’ll add an Edit Meeting feature:
+
+In your table, add an Edit button for each row (with data-meetingid).
+
+When clicked → it will open a Bootstrap modal and load meeting details (Title, Dates, Venue, Organizer) based on MeetingId.
+
+Then user can update the details and save changes back to the database.
+
+
+
+---
+
+✅ Step 1: Add Edit Button in Table
+
+Inside your GridView or table:
+
+<asp:GridView ID="gvMeetings" runat="server" AutoGenerateColumns="False" CssClass="table table-striped">
+    <Columns>
+        <asp:BoundField DataField="MeetingId" HeaderText="Meeting ID" />
+        <asp:BoundField DataField="Title" HeaderText="Title" />
+        <asp:BoundField DataField="StartDateTime" HeaderText="Start" DataFormatString="{0:yyyy-MM-dd HH:mm}" />
+        <asp:BoundField DataField="EndDateTime" HeaderText="End" DataFormatString="{0:yyyy-MM-dd HH:mm}" />
+        <asp:BoundField DataField="Venue" HeaderText="Venue" />
+        <asp:BoundField DataField="Organizer" HeaderText="Organizer" />
+
+        <!-- Action Buttons -->
+        <asp:TemplateField HeaderText="Actions">
+            <ItemTemplate>
+                <button type="button" class="btn btn-sm btn-primary editMeetingBtn"
+                    data-meetingid='<%# Eval("MeetingId") %>'
+                    data-bs-toggle="modal" data-bs-target="#editMeetingModal">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+            </ItemTemplate>
+        </asp:TemplateField>
+    </Columns>
+</asp:GridView>
+
+
+---
+
+✅ Step 2: Edit Meeting Modal
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editMeetingModal" tabindex="-1" aria-labelledby="editMeetingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Edit Meeting</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formEditMeeting" runat="server" class="needs-validation" novalidate>
+                <div class="modal-body">
+                    <asp:HiddenField ID="hfEditMeetingId" runat="server" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <asp:TextBox ID="txtEditTitle" runat="server" CssClass="form-control" />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Start Date</label>
+                            <asp:TextBox ID="txtEditStartDate" runat="server" CssClass="form-control" TextMode="DateTimeLocal" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">End Date</label>
+                            <asp:TextBox ID="txtEditEndDate" runat="server" CssClass="form-control" TextMode="DateTimeLocal" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Venue</label>
+                        <asp:TextBox ID="txtEditVenue" runat="server" CssClass="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Organizer</label>
+                        <asp:TextBox ID="txtEditOrganizer" runat="server" CssClass="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <asp:Button ID="btnUpdate" runat="server" CssClass="btn btn-success"
+                        Text="Update" OnClick="btnUpdate_Click" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+---
+
+✅ Step 3: JavaScript to Load Meeting Data
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".editMeetingBtn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            var meetingId = this.getAttribute("data-meetingid");
+
+            // AJAX call to fetch meeting details from server
+            $.ajax({
+                type: "POST",
+                url: "meetinglist1.aspx/GetMeetingById",
+                data: JSON.stringify({ meetingId: meetingId }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    var m = response.d;
+                    $("#<%= hfEditMeetingId.ClientID %>").val(m.MeetingId);
+                    $("#<%= txtEditTitle.ClientID %>").val(m.Title);
+                    $("#<%= txtEditStartDate.ClientID %>").val(m.StartDateTime);
+                    $("#<%= txtEditEndDate.ClientID %>").val(m.EndDateTime);
+                    $("#<%= txtEditVenue.ClientID %>").val(m.Venue);
+                    $("#<%= txtEditOrganizer.ClientID %>").val(m.Organizer);
+                }
+            });
+        });
+    });
+});
+</script>
+
+
+---
+
+✅ Step 4: Code-Behind for Edit
+
+In meetinglist1.aspx.cs:
+
+[System.Web.Services.WebMethod]
+public static object GetMeetingById(string meetingId)
+{
+    string connStr = ConfigurationManager.ConnectionStrings["MeetingDb"].ConnectionString;
+    using (SqlConnection conn = new SqlConnection(connStr))
+    using (SqlCommand cmd = new SqlCommand("GetMeetingById", conn))
+    {
+        cmd.CommandType = CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@MeetingId", meetingId);
+        conn.Open();
+
+        using (SqlDataReader dr = cmd.ExecuteReader())
+        {
+            if (dr.Read())
+            {
+                return new
+                {
+                    MeetingId = dr["MeetingId"].ToString(),
+                    Title = dr["Title"].ToString(),
+                    StartDateTime = Convert.ToDateTime(dr["StartDateTime"]).ToString("yyyy-MM-ddTHH:mm"),
+                    EndDateTime = Convert.ToDateTime(dr["EndDateTime"]).ToString("yyyy-MM-ddTHH:mm"),
+                    Venue = dr["Venue"].ToString(),
+                    Organizer = dr["Organizer"].ToString()
+                };
+            }
+        }
+    }
+    return null;
+}
+
+protected void btnUpdate_Click(object sender, EventArgs e)
+{
+    string connStr = ConfigurationManager.ConnectionStrings["MeetingDb"].ConnectionString;
+    using (SqlConnection conn = new SqlConnection(connStr))
+    using (SqlCommand cmd = new SqlCommand("UpdateMeeting", conn))
+    {
+        cmd.CommandType = CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@MeetingId", hfEditMeetingId.Value);
+        cmd.Parameters.AddWithValue("@Title", txtEditTitle.Text);
+        cmd.Parameters.AddWithValue("@StartDateTime", DateTime.Parse(txtEditStartDate.Text));
+        cmd.Parameters.AddWithValue("@EndDateTime", DateTime.Parse(txtEditEndDate.Text));
+        cmd.Parameters.AddWithValue("@Venue", txtEditVenue.Text);
+        cmd.Parameters.AddWithValue("@Organizer", txtEditOrganizer.Text);
+
+        conn.Open();
+        cmd.ExecuteNonQuery();
+    }
+
+    // Refresh list after update
+    LoadMeetings();
+
+    // Close modal + show alert
+    ScriptManager.RegisterStartupScript(this, this.GetType(), "updateSuccess",
+        "closeEditModal(); showSuccessAlert('Meeting updated successfully!');", true);
+}
+
+
+---
+
+✅ Step 5: Stored Procedure for Update
+
+CREATE PROCEDURE UpdateMeeting
+    @MeetingId NVARCHAR(50),
+    @Title NVARCHAR(200),
+    @StartDateTime DATETIME,
+    @EndDateTime DATETIME,
+    @Venue NVARCHAR(200),
+    @Organizer NVARCHAR(200)
+AS
+BEGIN
+    UPDATE tbl_meetings
+    SET Title = @Title,
+        StartDateTime = @StartDateTime,
+        EndDateTime = @EndDateTime,
+        Venue = @Venue,
+        Organizer = @Organizer
+    WHERE MeetingId = @MeetingId;
+END
+
+
+---
+
+👉 Do you want me to also add a Delete button in the same modal so you can remove meetings, or just keep it strictly for editing?
+
+
+
 
 -- Update Error Form Tag
 Perfect 👍 I’ll give you the cleaned-up full markup for both Add New Meeting and Edit Meeting modals.
