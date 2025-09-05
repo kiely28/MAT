@@ -1,0 +1,252 @@
+USE [db_MeetingAttendance]
+GO
+/****** Object:  StoredProcedure [dbo].[MA_GetMeetingCounts]    Script Date: 9/5/2025 4:32:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[MA_GetMeetingCounts]
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        -- Total number of meetings
+        --(SELECT COUNT(*) FROM tbl_Meetings) AS TotalMeetings,
+
+        -- Meetings scheduled in the future
+        (SELECT COUNT(*) FROM tbl_Meetings 
+         WHERE [StartDateTime] > GETDATE() 
+		 AND Status1 = 'Scheduled') AS UpcomingMeetings,
+
+		 --(SELECT COUNT(*) FROM tbl_Meetings 
+		 -- WHERE [EndDateTime] < GETDATE() 
+		 -- AND Status1 = 'Ongoing') AS OngoingMeetings,
+		 (SELECT COUNT(*) FROM tbl_Meetings
+		 WHERE [StartDateTime] <= GETDATE() AND [EndDateTime] >= GETDATE()
+			AND Status1 = 'Ongoing') AS OngoingMeetings,
+
+        -- Meetings scheduled in the past but not attended/missed
+        (SELECT COUNT(*) FROM tbl_Meetings 
+         WHERE [StartDateTime] < GETDATE()
+           AND Status1 = 'Scheduled') AS MissedMeetings,
+
+        ---- Meetings already completed (History)
+        (SELECT COUNT(*) FROM tbl_Meetings 
+         WHERE [StartDateTime] < GETDATE()
+           AND Status1 = 'Completed') AS HistoryMeetings;
+END
+
+
+
+USE [db_MeetingAttendance]
+GO
+/****** Object:  StoredProcedure [dbo].[MA_GetUserMeetings]    Script Date: 9/5/2025 4:33:21 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[MA_GetUserMeetings]
+    @CreatedBy NVARCHAR(100)
+AS
+BEGIN
+    --SELECT MeetingId, Title, StartDate, EndDate, Venue, Organizer
+    --FROM Tbl_Meetings
+    --WHERE CreatedBy = @CreatedBy 
+    --  AND CAST(StartDate AS DATE) >= CAST(GETDATE() AS DATE)
+    --ORDER BY StartDate;
+
+	--SELECT * FROM [Tbl_Meetings]
+	--WHERE CreatedBy = @CreatedBy 
+	--AND CAST(GETDATE() AS DATE) BETWEEN startdate AND enddate
+	--OR startdate > CAST(GETDATE() AS DATE)
+	--ORDER BY StartDate;
+
+	--SELECT *
+	--FROM [Tbl_Meetings]
+	--WHERE CreatedBy = @CreatedBy 
+	--  AND (
+	--	(CAST(GETDATE() AS DATE) BETWEEN StartDateTime AND EndDateTime)
+	--	OR (StartDateTime > CAST(GETDATE() AS DATE))
+	--  )
+	--  AND Status1 IN ('Scheduled', 'Ongoing')
+	--ORDER BY StartDateTime;
+
+	SELECT 
+      [MeetingId],
+      [Title],
+      [StartDateTime],
+      [EndDateTime],
+      [Venue],
+	  [Status1]
+	FROM [db_MeetingAttendance].[dbo].[Tbl_Meetings]
+	WHERE CreatedBy = @CreatedBy 
+	--AND Flag IN ('1', '2')
+	AND Status1 IN ('Scheduled', 'Ongoing')
+	ORDER BY StartDateTime;
+END
+
+
+
+
+USE [db_MeetingAttendance]
+GO
+/****** Object:  StoredProcedure [dbo].[MA_InsertMeeting]    Script Date: 9/5/2025 4:33:38 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[MA_InsertMeeting]
+    @Title NVARCHAR(200),
+    @StartDateTime DATETIME,
+    @EndDateTime DATETIME,
+    @Venue NVARCHAR(100),
+    @Organizer NVARCHAR(100),
+    @CreatedBy NVARCHAR(100),
+    @MeetingId NVARCHAR(50) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        DECLARE @Prefix NVARCHAR(20) = 'MA-' + FORMAT(GETDATE(), 'yyyyMM') + '-';
+
+        -- Lock the table to prevent race conditions
+        DECLARE @LastSeq INT;
+
+        SELECT @LastSeq = ISNULL(MAX(CAST(RIGHT(MeetingId, 3) AS INT)), 0)
+        FROM Tbl_Meetings WITH (TABLOCKX, HOLDLOCK)
+        WHERE MeetingId LIKE @Prefix + '%';
+
+        DECLARE @NextSeq INT = @LastSeq + 1;
+
+        SET @MeetingId = @Prefix + RIGHT('000' + CAST(@NextSeq AS VARCHAR(3)), 3);
+
+        INSERT INTO Tbl_Meetings 
+            (MeetingId, Title, StartDateTime, EndDateTime, Venue, Organizer, CreatedBy, Status1, Flag)
+        VALUES 
+            (@MeetingId, @Title, @StartDateTime, @EndDateTime, @Venue, @Organizer, @CreatedBy, 'Scheduled', '1');
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        -- Rethrow the error so your C# can catch it
+        THROW;
+    END CATCH
+END
+
+
+
+
+USE [db_MeetingAttendance]
+GO
+/****** Object:  StoredProcedure [dbo].[MA_UpdateMeeting]    Script Date: 9/5/2025 4:33:52 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[MA_UpdateMeeting]
+    @MeetingId NVARCHAR(50),
+    @Title NVARCHAR(200),
+    @StartDateTime DATETIME,
+    @EndDateTime DATETIME,
+    @Venue NVARCHAR(200),
+    @Organizer NVARCHAR(200)
+AS
+BEGIN
+    UPDATE tbl_meetings
+    SET Title = @Title,
+        StartDateTime = @StartDateTime,
+        EndDateTime = @EndDateTime,
+        Venue = @Venue,
+        Organizer = @Organizer
+    WHERE MeetingId = @MeetingId;
+END
+
+
+
+USE [db_MeetingAttendance]
+GO
+/****** Object:  StoredProcedure [dbo].[MA_UpdateMeetingStatus]    Script Date: 9/5/2025 4:34:03 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER PROCEDURE [dbo].[MA_UpdateMeetingStatus]
+    @MeetingID INT,
+    @Status NVARCHAR(50)
+AS
+BEGIN
+    UPDATE tbl_meetings
+    SET Status1 = @Status
+    WHERE MeetingID = @MeetingID;
+END
+
+
+
+
+USE [db_MeetingAttendance]
+GO
+
+/****** Object:  Table [dbo].[Tbl_Meetings]    Script Date: 9/5/2025 4:34:47 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Tbl_Meetings](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[MeetingId] [nvarchar](50) NULL,
+	[Title] [nvarchar](200) NULL,
+	[StartDateTime] [datetime] NULL,
+	[EndDateTime] [datetime] NULL,
+	[Venue] [nvarchar](100) NULL,
+	[Organizer] [nvarchar](100) NULL,
+	[Status1] [nvarchar](50) NULL,
+	[CreatedBy] [nvarchar](100) NULL,
+	[CreatedDate] [datetime] NULL,
+	[Flag] [nvarchar](50) NULL,
+ CONSTRAINT [PK_Tbl_Meetings] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Tbl_Meetings] ADD  CONSTRAINT [DF_Tbl_Meetings_CreatedDate]  DEFAULT (getdate()) FOR [CreatedDate]
+GO
+
+
+
+
+USE [db_MeetingAttendance]
+GO
+
+/****** Object:  Table [dbo].[Tbl_Participants]    Script Date: 9/5/2025 4:35:34 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Tbl_Participants](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[MeetingId] [nvarchar](200) NULL,
+	[CardSerialNo] [nvarchar](200) NULL,
+	[TimeIn] [nvarchar](50) NULL,
+	[TimeOut] [nvarchar](50) NULL,
+ CONSTRAINT [PK_Tbl_Participants] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+
