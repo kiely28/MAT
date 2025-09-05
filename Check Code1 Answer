@@ -342,3 +342,325 @@ Delete Meeting → removes the record.
 
 Do you also want me to add a Bootstrap toast (bottom-right notification) for success messages instead of the current alert panel? That way, both start and delete actions can give a cleaner UI confirmation.
 
+
+
+-- TEST
+
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="WebForm1.aspx.cs" Inherits="WebApplication1_MAL.WebForm1" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Meeting Attendance Tapping</title>
+
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito">
+
+    <!-- Custom styles -->
+    <link href="css/styles.css" rel="stylesheet" />
+    <!-- ??? -->
+    <link href="Scripts2/styles.css" rel="stylesheet" />
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+
+    <script type="text/javascript">
+        function proceed() {
+            return confirm('Are you sure you want to Approve this Report?');
+        }
+    </script>
+
+    <!-- Existing JS -->
+    <script src="Scripts2/jquery-3.2.0.min.js"></script>
+    <script src="Scripts2/all.min.js"></script>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div>
+            <div class="row g-4">
+                <div class="container mt-4">
+                    <div class="card">
+                        <div class="card-header d-flex align-items-center">
+                            <i class="bi bi-list me-2" style="font-size: 1.5rem; cursor: pointer;"></i>
+                            <span>Meetings List</span>
+                        </div>
+                        <div class="card-body">
+                            <!-- Table -->
+                            <asp:GridView ID="gvMeetings" runat="server" CssClass="table table-bordered" UseAccessibleHeader="true"
+                                AutoGenerateColumns="False" OnRowCommand="gvMeetings_RowCommand" DataKeyNames="MeetingId" OnRowCreated="gvMeetings_RowCreated" OnRowDataBound="gvMeetings_RowDataBound">
+                                <Columns>
+                                    <asp:TemplateField HeaderText="#" HeaderStyle-HorizontalAlign="Center">
+                                        <ItemTemplate>
+                                            <%# Container.DataItemIndex + 1 %>
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+                                    <asp:BoundField DataField="MeetingId" HeaderText="Meeting ID" />
+                                    <asp:BoundField DataField="Title" HeaderText="Title" />
+                                    <asp:BoundField DataField="StartDateTime" HeaderText="Start Date" DataFormatString="{0:MM-dd-yyyy hh:mm tt}" />
+                                    <asp:BoundField DataField="EndDateTime" HeaderText="End Date" DataFormatString="{0:MM-dd-yyyy hh:mm tt}" />
+                                    <asp:BoundField DataField="Venue" HeaderText="Venue" />
+                                    <%--<asp:BoundField DataField="Status" HeaderText="Status" />--%>
+                                    <asp:TemplateField HeaderText="Status">
+                                        <ItemTemplate>
+                                            <asp:Label ID="lblStatus" runat="server" Text='<%# Eval("Status1") %>' CssClass="badge"></asp:Label>
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+
+                                    <%--<asp:TemplateField HeaderText="Actions">--%>
+
+                                    <asp:TemplateField>
+                                        <HeaderTemplate>
+                                            <i class="bi bi-gear-fill"></i>Actions
+                                        </HeaderTemplate>
+                                        <ItemTemplate>
+                                            <asp:LinkButton runat="server" CommandName="StartMeeting" CommandArgument='<%# Eval("MeetingId") %>' CssClass="btn btn-sm text-primary me-1" ToolTip="View Meeting">
+                                                        <i class="far fa-eye"></i>
+                                            </asp:LinkButton>
+                                            <%--<button class="btn btn-sm btn-info" 
+                                                        onclick="openStartModal('<%# Eval("MeetingId") %>')">
+                                                    <i class="fas fa-play"></i>
+                                                </button>--%>
+
+                                            <asp:LinkButton runat="server" CommandName="EditMeeting" CommandArgument='<%# Eval("MeetingId") %>' CssClass="btn btn-sm text-warning me-1" ToolTip="Edit">
+                                                        <i class="fas fa-pencil-alt"></i>
+                                            </asp:LinkButton>
+                                            <button type="button" class="btn btn-sm btn-primary editMeetingBtn"
+                                                data-meetingid='<%# Eval("MeetingId") %>'
+                                                data-bs-toggle="modal" data-bs-target="#editMeetingModal">
+                                                <i class="fas fa-pencil-alt"></i>
+                                            </button>
+                                            <asp:LinkButton runat="server" CommandName="DeleteMeeting" CommandArgument='<%# Eval("MeetingId") %>' CssClass="btn btn-sm text-danger me-1" OnClientClick="return confirm('Are you sure you want to delete this meeting?');" ToolTip="Delete Meeting">
+                                                        <i class="fas fa-trash"></i>
+                                            </asp:LinkButton>
+
+                                            <%--<button class="btn btn-sm btn-danger" 
+                                                        onclick="openDeleteModal('<%# Eval("MeetingId") %>')">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>--%>
+
+                                            <asp:LinkButton ID="lnkDelete" runat="server" CssClass="btn btn-danger btn-sm"
+                                                OnClientClick='<%# "openDeleteModal(" + Eval("MeetingId") + "); return false;" %>'>
+                                                    <i class="fas fa-trash"></i> Delete
+                                            </asp:LinkButton>
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+                                </Columns>
+                            </asp:GridView>
+                            <asp:Label ID="lblMessage" runat="server" CssClass="text-danger fw-bold"></asp:Label>
+                            <!-- End Table -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Meeting Modal -->
+            <div class="modal fade" id="deleteMeetingModal" tabindex="-1" aria-labelledby="deleteMeetingModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteMeetingModalLabel">Delete Meeting</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete this meeting?</p>
+                            <asp:HiddenField ID="hfDeleteMeetingId" runat="server" />
+                        </div>
+                        <div class="modal-footer">
+                            <asp:Button ID="btnDeleteConfirm" runat="server" CssClass="btn btn-danger"
+                                Text="Delete" OnClick="btnDelete_Click" />
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- Scripts already in your footer -->
+    <script src="Scripts2/bootstrap.bundle.min.js"></script>
+    <script src="Scripts2/scripts.js"></script>
+    <script src="Scripts2/simple-datatables.js"></script>
+    <script src="Scripts2/datatables-simple-demo.js"></script>
+    <!-- Bootstrap JS -->
+
+    <script>
+        // Open Delete Meeting modal
+        function openDeleteModal(meetingId) {
+            document.getElementById('<%= hfDeleteMeetingId.ClientID %>').value = meetingId;
+            var modal = new bootstrap.Modal(document.getElementById('deleteMeetingModal'));
+            modal.show();
+        }
+    </script>
+</body>
+</html>
+
+
+
+--- behind code
+
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace WebApplication1_MAL
+{
+    public partial class WebForm1 : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                LoadMeetings();
+            }
+        }
+
+        private void LoadMeetings()
+        {
+            string connStr = ConfigurationManager.ConnectionStrings["MeetingDb"].ConnectionString;
+            string currentUser = "B014172"; //Session["Username"].ToString(); //"B014172"; //Session["B014172"].ToString(); //User.Identity.Name; // or Session["Username"].ToString();
+
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("MA_GetUserMeetings", conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@CreatedBy", currentUser);
+
+                using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                {
+                    DataTable dt = new DataTable();
+                    da.Fill(dt);
+
+                    if (dt.Rows.Count > 0)
+                    {
+                        gvMeetings.DataSource = dt;
+                        gvMeetings.DataBind();
+                    }
+                    else
+                    {
+                        lblMessage.Text = "No upcoming meetings found.";
+                        gvMeetings.DataSource = null;
+                        gvMeetings.DataBind();
+                    }
+                }
+            }
+        }
+
+        protected void btnDelete_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(hfDeleteMeetingId.Value))
+            {
+                int meetingId = int.Parse(hfDeleteMeetingId.Value);
+                string connStr = ConfigurationManager.ConnectionStrings["MeetingDb"].ConnectionString;
+
+                using (SqlConnection conn = new SqlConnection(connStr))
+                using (SqlCommand cmd = new SqlCommand("sp_DeleteMeeting", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@MeetingId", meetingId);
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+
+                LoadMeetings();
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "deleteSuccess",
+                    "showSuccessAlert('Meeting deleted successfully!');", true);
+            }
+        }
+
+        protected void gvMeetings_RowCommand(object sender, GridViewCommandEventArgs e)
+        {
+            string meetingId = e.CommandArgument.ToString();
+
+
+            if (e.CommandName == "StartMeeting")
+            {
+                string connectionString = ConfigurationManager.ConnectionStrings["MeetingDb"].ConnectionString;
+                //string connStr = ConfigurationManager.ConnectionStrings["MeetingDb"].ConnectionString;
+
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand("UpdateMeetingStatus", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@MeetingID", meetingId);
+
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                // Redirect to Tapping Page (e.g., Attendance logging)
+                Response.Redirect($"meetingattendance.aspx?meetingId={meetingId}");
+            }
+
+            else if (e.CommandName == "EditMeeting")
+            {
+                // Redirect to Edit page (you must create this)
+                Response.Redirect($"EditMeeting.aspx?meetingId={meetingId}");
+            }
+            else if (e.CommandName == "DeleteMeeting")
+            {
+                //DeleteMeeting(meetingId);
+                LoadMeetings(); // refresh grid
+
+            }
+        }
+
+        protected void gvMeetings_RowCreated(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType == DataControlRowType.Header)
+            {
+                e.Row.TableSection = TableRowSection.TableHeader;
+            }
+        }
+
+
+        protected void gvMeetings_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType == DataControlRowType.DataRow)
+            {
+                Label lblStatus = (Label)e.Row.FindControl("lblStatus");
+                if (lblStatus != null)
+                {
+                    //string status = lblStatus.Text.ToLower();
+                    string status = lblStatus.Text.Trim().ToLower();
+
+                    switch (status)
+                    {
+                        case "scheduled":
+                            lblStatus.CssClass = "badge bg-info";
+                            break;
+                        case "ongoing":
+                            lblStatus.CssClass = "badge bg-success";
+                            break;
+                        //case "missed":
+                        //    lblStatus.CssClass = "badge bg-danger";
+                        //    break;
+                        default:
+                            lblStatus.CssClass = "badge bg-secondary";
+                            break;
+
+                    }
+                }
+            }
+        }
+    }
+}
