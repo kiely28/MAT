@@ -750,3 +750,115 @@ else if (e.CommandName == "DeleteMeeting")
 Do you want me to also add a Bootstrap toast alert (instead of plain alert) so it looks modern when a meeting is deleted?
 
 
+
+
+------
+
+
+Got it 👍 thanks for confirming. Let’s carefully trace why your delete is still not working.
+
+
+---
+
+🔎 Current Situation
+
+You click Delete → modal opens (✅ works).
+
+You confirm → btnDelete_Click should run, but nothing happens (❌ not working).
+
+
+That usually means the modal confirm button is not posting back correctly.
+
+Looking at your modal code:
+
+<asp:Button ID="btnDeleteConfirm" runat="server" CssClass="btn btn-danger"
+    Text="Delete" OnClick="btnDelete_Click" />
+
+⚠️ Problem: Bootstrap modal buttons can sometimes prevent postback if inside <form> with certain scripts.
+
+
+---
+
+✅ Fix: Force PostBack
+
+Replace the delete button with a LinkButton (works better inside modals):
+
+<asp:LinkButton ID="btnDeleteConfirm" runat="server" 
+    CssClass="btn btn-danger" OnClick="btnDelete_Click">
+    <i class="fas fa-trash"></i> Delete
+</asp:LinkButton>
+
+
+---
+
+✅ Double-Check HiddenField
+
+Make sure openDeleteModal() is setting the hidden field correctly:
+
+function openDeleteModal(meetingId) {
+    document.getElementById('<%= hfDeleteMeetingId.ClientID %>').value = meetingId;
+    var modal = new bootstrap.Modal(document.getElementById('deleteMeetingModal'));
+    modal.show();
+}
+
+When you click delete:
+
+Open DevTools → Console and run:
+
+document.getElementById('<%= hfDeleteMeetingId.ClientID %>').value
+
+You should see the correct MeetingId.
+
+
+
+---
+
+✅ CodeBehind
+
+Your btnDelete_Click is correct:
+
+protected void btnDelete_Click(object sender, EventArgs e)
+{
+    if (!string.IsNullOrEmpty(hfDeleteMeetingId.Value))
+    {
+        int meetingId = int.Parse(hfDeleteMeetingId.Value);
+        string connStr = ConfigurationManager.ConnectionStrings["MeetingDb"].ConnectionString;
+
+        using (SqlConnection conn = new SqlConnection(connStr))
+        using (SqlCommand cmd = new SqlCommand("sp_DeleteMeeting", conn))
+        {
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@MeetingId", meetingId);
+            conn.Open();
+            cmd.ExecuteNonQuery();
+        }
+
+        LoadMeetings();
+    }
+}
+
+This should fire if the button posts back.
+
+
+---
+
+✅ Checklist to Debug
+
+1. Did you change the modal button to <asp:LinkButton>?
+
+
+2. Does hfDeleteMeetingId actually get populated (check browser console)?
+
+
+3. Is sp_DeleteMeeting in SQL working when called manually?
+
+
+4. Does the page reload after delete click (if not, it’s not posting back at all)?
+
+
+
+
+---
+
+👉 Would you like me to rewrite your Delete modal + button in full (with Bootstrap + ASP.NET safe wiring), so you can just replace your existing one and test again?
+
