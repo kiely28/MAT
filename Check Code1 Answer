@@ -181,3 +181,164 @@ You are still hardcoding string currentUser = "B014172";
 
 Do you want me to refactor your code so it only uses DataTables.js (not simple-datatables) with correct row coloring, or do you prefer to keep simple-datatables for lighter weight?
 
+
+
+
+-----------
+
+Got it ✅ Two separate modals will make the flow clearer — one for Start Meeting and another for Delete Meeting.
+Here’s how you can do it:
+
+
+---
+
+🟢 Start Meeting Modal (ASPX)
+
+<!-- Start Meeting Modal -->
+<div class="modal fade" id="startMeetingModal" tabindex="-1" aria-labelledby="startMeetingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="startMeetingModalLabel">Start Meeting</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Do you want to start this meeting?</p>
+                <asp:HiddenField ID="hfStartMeetingId" runat="server" />
+            </div>
+            <div class="modal-footer">
+                <asp:Button ID="btnStartMeeting" runat="server" CssClass="btn btn-success"
+                    Text="Start" OnClick="btnStartMeeting_Click" />
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+---
+
+🔴 Delete Meeting Modal (ASPX)
+
+<!-- Delete Meeting Modal -->
+<div class="modal fade" id="deleteMeetingModal" tabindex="-1" aria-labelledby="deleteMeetingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteMeetingModalLabel">Delete Meeting</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this meeting?</p>
+                <asp:HiddenField ID="hfDeleteMeetingId" runat="server" />
+            </div>
+            <div class="modal-footer">
+                <asp:Button ID="btnDeleteConfirm" runat="server" CssClass="btn btn-danger"
+                    Text="Delete" OnClick="btnDelete_Click" />
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+---
+
+🎯 JavaScript (Open the Correct Modal)
+
+// Open Start Meeting modal
+function openStartModal(meetingId) {
+    document.getElementById('<%= hfStartMeetingId.ClientID %>').value = meetingId;
+    var modal = new bootstrap.Modal(document.getElementById('startMeetingModal'));
+    modal.show();
+}
+
+// Open Delete Meeting modal
+function openDeleteModal(meetingId) {
+    document.getElementById('<%= hfDeleteMeetingId.ClientID %>').value = meetingId;
+    var modal = new bootstrap.Modal(document.getElementById('deleteMeetingModal'));
+    modal.show();
+}
+
+
+---
+
+⚡ Code-Behind (C#)
+
+protected void btnStartMeeting_Click(object sender, EventArgs e)
+{
+    if (!string.IsNullOrEmpty(hfStartMeetingId.Value))
+    {
+        int meetingId = int.Parse(hfStartMeetingId.Value);
+
+        using (SqlConnection conn = new SqlConnection(connStr))
+        using (SqlCommand cmd = new SqlCommand("sp_UpdateMeetingStatus", conn))
+        {
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@MeetingId", meetingId);
+            cmd.Parameters.AddWithValue("@Status", "Ongoing");
+            conn.Open();
+            cmd.ExecuteNonQuery();
+        }
+
+        BindMeetings();
+
+        // Redirect to attendance page
+        Response.Redirect("meetingattendance.aspx?meetingId=" + meetingId);
+    }
+}
+
+protected void btnDelete_Click(object sender, EventArgs e)
+{
+    if (!string.IsNullOrEmpty(hfDeleteMeetingId.Value))
+    {
+        int meetingId = int.Parse(hfDeleteMeetingId.Value);
+
+        using (SqlConnection conn = new SqlConnection(connStr))
+        using (SqlCommand cmd = new SqlCommand("sp_DeleteMeeting", conn))
+        {
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@MeetingId", meetingId);
+            conn.Open();
+            cmd.ExecuteNonQuery();
+        }
+
+        BindMeetings();
+
+        ScriptManager.RegisterStartupScript(this, this.GetType(), "deleteSuccess",
+            "showSuccessAlert('Meeting deleted successfully!');", true);
+    }
+}
+
+
+---
+
+🖱️ Example Buttons in GridView
+
+<!-- Start Button -->
+<asp:LinkButton ID="lnkStart" runat="server" CssClass="btn btn-success btn-sm"
+    OnClientClick='<%# "openStartModal(" + Eval("MeetingId") + "); return false;" %>'>
+    <i class="fas fa-play"></i> Start
+</asp:LinkButton>
+
+<!-- Delete Button -->
+<asp:LinkButton ID="lnkDelete" runat="server" CssClass="btn btn-danger btn-sm"
+    OnClientClick='<%# "openDeleteModal(" + Eval("MeetingId") + "); return false;" %>'>
+    <i class="fas fa-trash"></i> Delete
+</asp:LinkButton>
+
+
+---
+
+✅ Now you’ll have two separate confirmation modals:
+
+Start Meeting → changes status to Ongoing and redirects.
+
+Delete Meeting → removes the record.
+
+
+
+---
+
+Do you also want me to add a Bootstrap toast (bottom-right notification) for success messages instead of the current alert panel? That way, both start and delete actions can give a cleaner UI confirmation.
+
