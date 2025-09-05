@@ -664,3 +664,89 @@ namespace WebApplication1_MAL
         }
     }
 }
+
+
+
+---- Answer
+
+Perfect 👍 Let’s clean up your Actions column so you only have one delete flow (modal → confirm → btnDelete_Click).
+
+Here’s the rewritten GridView Actions column:
+
+<asp:TemplateField>
+    <HeaderTemplate>
+        <i class="bi bi-gear-fill"></i> Actions
+    </HeaderTemplate>
+    <ItemTemplate>
+        <!-- Start Meeting -->
+        <asp:LinkButton runat="server" CommandName="StartMeeting" 
+            CommandArgument='<%# Eval("MeetingId") %>' 
+            CssClass="btn btn-sm text-primary me-1" ToolTip="Start Meeting">
+            <i class="far fa-eye"></i>
+        </asp:LinkButton>
+
+        <!-- Edit Meeting -->
+        <asp:LinkButton runat="server" CommandName="EditMeeting" 
+            CommandArgument='<%# Eval("MeetingId") %>' 
+            CssClass="btn btn-sm text-warning me-1" ToolTip="Edit Meeting">
+            <i class="fas fa-pencil-alt"></i>
+        </asp:LinkButton>
+
+        <!-- Delete Meeting (opens modal) -->
+        <asp:LinkButton ID="lnkDelete" runat="server" CssClass="btn btn-sm text-danger"
+            OnClientClick='<%# "openDeleteModal(" + Eval("MeetingId") + "); return false;" %>' 
+            ToolTip="Delete Meeting">
+            <i class="fas fa-trash"></i>
+        </asp:LinkButton>
+    </ItemTemplate>
+</asp:TemplateField>
+
+
+---
+
+✅ What Changed
+
+1. Removed the duplicate delete button (CommandName="DeleteMeeting").
+
+
+2. Kept only one delete button (lnkDelete) that opens the modal.
+
+
+3. Modal confirms → btnDelete_Click runs the stored procedure → refreshes meetings.
+
+
+4. Your RowCommand no longer needs the DeleteMeeting branch:
+
+else if (e.CommandName == "DeleteMeeting")
+{
+    LoadMeetings();
+}
+
+❌ Remove this block.
+
+
+
+
+---
+
+🔧 Now Your Delete Flow Works Like This:
+
+1. User clicks trash icon → modal opens (openDeleteModal(meetingId)).
+
+
+2. Modal shows → user confirms.
+
+
+3. btnDelete_Click executes sp_DeleteMeeting.
+
+
+4. Grid reloads with updated list.
+
+
+
+
+---
+
+Do you want me to also add a Bootstrap toast alert (instead of plain alert) so it looks modern when a meeting is deleted?
+
+
