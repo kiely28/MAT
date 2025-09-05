@@ -1,0 +1,183 @@
+I checked your code (both ASPX and code-behind). 👍
+Here are my findings and suggestions to improve/correct it:
+
+
+---
+
+✅ Good Points
+
+Well-structured GridView with template fields, proper key (DataKeyNames="MeetingId").
+
+Stored procedures for insert, update, delete, and status updates → clean DB handling.
+
+AJAX WebMethod (GetMeetingById) → nice approach for edit modal.
+
+Bootstrap 5 integration → proper modal and alerts.
+
+Status badges dynamically styled in RowDataBound.
+
+
+
+---
+
+⚠️ Issues & Fixes
+
+1. Duplicate/Conflicting JS Libraries
+
+You are loading simple-datatables.js and also using DataTables ($('#gvMeetings').DataTable()).
+
+These are two different libraries and conflict with each other.
+
+
+👉 Fix:
+Decide which one to use:
+
+If you want Bootstrap-friendly DataTables → use jQuery DataTables.
+
+If you want lightweight → keep simple-datatables and remove $('#gvMeetings').DataTable().
+
+
+Example (keep only one):
+
+<!-- If you keep DataTables -->
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+
+Or if you keep simple-datatables, remove this block:
+
+$('#gvMeetings').DataTable({...});
+
+
+---
+
+2. Case-sensitive Column Name Issue
+
+You mix MeetingId vs MeetingID in some places:
+
+CommandArgument='<%# Eval("MeetingId") %>'
+onclick="openStartModal('<%# Eval("MeetingID") %>')"
+
+If your DB/SP returns MeetingId (not MeetingID), that second line will throw undefined error.
+
+👉 Fix: use one consistent casing everywhere:
+
+onclick="openStartModal('<%# Eval("MeetingId") %>')"
+
+
+---
+
+3. Modal Close for Update
+
+In btnUpdate_Click, you call:
+
+ScriptManager.RegisterStartupScript(this, this.GetType(), "updateSuccess",
+    "closeEditModal(); showSuccessAlert('Meeting updated successfully!');", true);
+
+But you don’t have a closeEditModal() JS function.
+
+👉 Fix: Add function:
+
+function closeEditModal() {
+    var modalEl = document.getElementById('editMeetingModal');
+    var modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) modal.hide();
+}
+
+
+---
+
+4. Auto-hide Success Panel
+
+Your showSuccessAlert() only handles the Add New modal.
+For update/delete, you reuse it but pass a message — yet your function doesn’t accept a parameter.
+
+👉 Fix:
+Update it like this:
+
+function showSuccessAlert(message) {
+    var alertBox = document.getElementById('<%= pnlSuccess.ClientID %>');
+    if (alertBox) {
+        alertBox.querySelector("div").innerText = message || "Saved successfully.";
+        alertBox.style.display = 'block';
+        setTimeout(function () {
+            var bsAlert = new bootstrap.Alert(alertBox);
+            bsAlert.close();
+        }, 3000);
+    }
+}
+
+
+---
+
+5. Date Validation
+
+Your client-side validator (validateDateRange) is declared but never attached.
+You can add this inside the modal:
+
+<asp:CustomValidator ID="cvDateRange" runat="server" 
+    ControlToValidate="txtEndDateTime"
+    ClientValidationFunction="validateDateRange"
+    ErrorMessage="End date must be greater than start date."
+    CssClass="text-danger" Display="Dynamic"
+    ValidationGroup="CreateMeeting" />
+
+
+---
+
+6. Row Coloring in DataTables
+
+Inside:
+
+var startDate = new Date(data[4]);
+var status = data[7];
+
+But your GridView columns order:
+0 = index, 1 = MeetingId, 2 = Title, 3 = StartDate, 4 = EndDate, 5 = Venue, 6 = Status.
+
+So data[4] = EndDate, not StartDate.
+👉 Fix:
+
+var startDate = new Date(data[3]); // StartDate is column 3
+var status = data[6]; // Status column
+
+
+---
+
+7. Security
+
+You are still hardcoding string currentUser = "B014172";
+👉 Replace with Session["Username"] or User.Identity.Name once authentication is ready.
+
+
+
+---
+
+🚀 Suggested Next Steps
+
+1. Pick either simple-datatables or jQuery DataTables → remove conflicts.
+
+
+2. Fix casing (MeetingId vs MeetingID).
+
+
+3. Add missing modal JS (closeEditModal).
+
+
+4. Enhance showSuccessAlert() to accept messages.
+
+
+5. Attach date range validator.
+
+
+6. Correct DataTable column indexes.
+
+
+7. Replace hardcoded user.
+
+
+
+
+---
+
+Do you want me to refactor your code so it only uses DataTables.js (not simple-datatables) with correct row coloring, or do you prefer to keep simple-datatables for lighter weight?
+
