@@ -170,3 +170,96 @@ Public Class Form3
         Me.WindowState = FormWindowState.Minimized
     End Sub
 End Class
+
+
+-- Update 12:51PM
+Got it 👍 You want to:
+
+1. Save the timestamp (current date & time) to a .txt file after copying the Excel file.
+
+
+2. Read that timestamp from the file when needed.
+
+
+3. Display it in a Label on your form.
+
+
+
+Here’s how you can extend your code:
+
+
+---
+
+🔹 Step 1: Add helper functions
+
+Private Sub SaveTimestamp(filePath As String)
+    Dim timestamp As String = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+    File.WriteAllText(filePath, timestamp)
+End Sub
+
+Private Function ReadTimestamp(filePath As String) As String
+    If File.Exists(filePath) Then
+        Return File.ReadAllText(filePath)
+    Else
+        Return "No timestamp found."
+    End If
+End Function
+
+
+---
+
+🔹 Step 2: Update your btnTemplate_Click after copying the file
+
+Inside this part:
+
+' Copy file (no overwrite needed since we purged)
+File.Copy(sourceFile, destinationFile, overwrite:=False)
+
+' Save timestamp to a .txt file
+Dim logFile As String = Path.Combine(destinationFolder, "LastCopied.txt")
+SaveTimestamp(logFile)
+
+' Read and display in a Label
+lblLastCopied.Text = "Last copied: " & ReadTimestamp(logFile)
+
+MessageBox.Show("File copied to: " & destinationFile, "Coefficient Inputting Automation",
+                MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+
+---
+
+🔹 Step 3: Show last timestamp on form load (optional)
+
+If you want the label to always show the last saved time when the app starts:
+
+Private Sub Form3_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+    Me.Text = "Coefficient Inputting Automation"
+
+    Dim logFile As String = "D:\Coefficient\Template\LastCopied.txt"
+    lblLastCopied.Text = "Last copied: " & ReadTimestamp(logFile)
+End Sub
+
+
+---
+
+🔹 Step 4: Add a Label in your form (Designer)
+
+Friend WithEvents lblLastCopied As Label
+
+Or in the Designer, drag a Label → set Name = lblLastCopied.
+
+
+---
+
+✅ Now:
+
+When you copy a template file, the current date/time is saved in LastCopied.txt.
+
+The label (lblLastCopied) automatically shows the last copied timestamp.
+
+
+
+---
+
+Do you want me to integrate this directly into your full code (with the changes in btnTemplate_Click and Form3_Load), so you can just copy-paste it?
+
