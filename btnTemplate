@@ -263,3 +263,99 @@ The label (lblLastCopied) automatically shows the last copied timestamp.
 
 Do you want me to integrate this directly into your full code (with the changes in btnTemplate_Click and Form3_Load), so you can just copy-paste it?
 
+
+-- Update 0918 0518AM
+Perfect — that’s the best way to avoid hardcoded paths 👍
+We’ll create an App.config file for your project and move things like:
+
+winActorExe path
+
+scenarioA path
+
+scenarioB path
+
+destinationFolder path
+
+logFile path
+
+
+
+---
+
+🔹 Step 1: Create an App.config
+
+In your project, right-click → Add → New Item → Application Configuration File → App.config
+
+Here’s a sample:
+
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <appSettings>
+    <!-- WinActor Executable -->
+    <add key="WinActorExe" value="C:\Program Files (x86)\WinActor7\WinActor7.exe" />
+
+    <!-- Scenarios -->
+    <add key="ScenarioA" value="D:\Coefficient\KP26.ums7" />
+    <add key="ScenarioB" value="D:\Coefficient\S_ALR_87008275.ums7" />
+
+    <!-- Excel Template Folder -->
+    <add key="DestinationFolder" value="D:\Coefficient\Template" />
+
+    <!-- Log file for last copied timestamp -->
+    <add key="LogFile" value="D:\Coefficient\Template\LastCopied.txt" />
+  </appSettings>
+</configuration>
+
+
+---
+
+🔹 Step 2: Read from App.config in your code
+
+At the top of your Form3.vb:
+
+Imports System.Configuration
+
+Then replace your Private ReadOnly ... paths with this:
+
+' Read values from App.config
+Private ReadOnly winActorExe As String = ConfigurationManager.AppSettings("WinActorExe")
+Private ReadOnly scenarioA As String = ConfigurationManager.AppSettings("ScenarioA")
+Private ReadOnly scenarioB As String = ConfigurationManager.AppSettings("ScenarioB")
+Private ReadOnly destinationFolder As String = ConfigurationManager.AppSettings("DestinationFolder")
+Private ReadOnly logFile As String = ConfigurationManager.AppSettings("LogFile")
+
+
+---
+
+🔹 Step 3: Update your Template Button code
+
+Inside btnTemplate_Click, replace this part:
+
+' Save timestamp to a .txt file
+SaveTimestamp(logFile)
+
+' Read and display in a Label
+lblLastCopied.Text = "Last copied: " & ReadTimestamp(logFile)
+
+
+---
+
+🔹 Step 4: Show last timestamp when Form loads
+
+Private Sub Form3_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+    Me.Text = "Coefficient Inputting Automation"
+
+    lblLastCopied.Text = "Last copied: " & ReadTimestamp(logFile)
+End Sub
+
+
+---
+
+✅ Now everything (paths + log file) is configurable in App.config.
+If you ever need to move folders or change paths, just update App.config — no need to recompile.
+
+
+---
+
+Do you want me to merge everything (with the timestamp save/read + App.config integration) into your full Form3.vb so you can copy-paste it directly?
+
