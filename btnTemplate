@@ -1,0 +1,172 @@
+Imports System.IO
+
+Public Class Form3
+    ' Adjust these paths for your environment:
+    Private ReadOnly winActorExe As String = "C:\Program Files (x86)\WinActor7\WinActor7.exe"
+    'Private ReadOnly scenarioA As String = "D:\WinActor\KP26.ums7"
+    'Private ReadOnly scenarioB As String = "D:\WinActor\S_ALR_87008275.ums7"
+
+    Private ReadOnly scenarioA As String = "D:\Coefficient\KP26.ums7"
+    Private ReadOnly scenarioB As String = "D:\Coefficient\S_ALR_87008275.ums7"
+
+    Private Async Sub btnScenario1_Click(sender As Object, e As EventArgs) Handles btnScenario1.Click
+        Await RunWinActorScenarioAsync(scenarioA)
+    End Sub
+
+    Private Async Sub btnScenario2_Click(sender As Object, e As EventArgs) Handles btnScenario2.Click
+        Await RunWinActorScenarioAsync(scenarioB)
+    End Sub
+
+    Private Async Function RunWinActorScenarioAsync(scnPath As String) As Task
+        ' (Optional) Avoid starting when WinActor is already running
+        If Process.GetProcessesByName("wa7").Any() Then
+            MessageBox.Show("WinActor is already running. Please close it before starting a new scenario.")
+            Return
+        End If
+
+        ' Configure the process start info
+        Dim psi As New ProcessStartInfo() With {
+            .FileName = winActorExe,
+            .Arguments = $"-f ""{scnPath}"" -r -e -t", ' open, run, exit, minimize to tray
+            .UseShellExecute = False,
+            .CreateNoWindow = False,
+            .WorkingDirectory = IO.Path.GetDirectoryName(winActorExe)
+        }
+
+        ' UI: show loading & disable buttons during run
+        pbLoading.Visible = True
+        btnScenario1.Enabled = False
+        btnScenario2.Enabled = False
+
+        Try
+            Dim p As Process = Process.Start(psi)
+            If p Is Nothing Then
+                Throw New InvalidOperationException("WinActor process failed to start.")
+            End If
+
+            ' Wait without blocking the UI thread
+            Await Task.Run(Sub() p.WaitForExit())
+        Catch ex As Exception
+            MessageBox.Show($"Failed to start or run WinActor: {ex.Message}")
+        Finally
+            ' UI: hide loading & re-enable buttons
+            pbLoading.Visible = False
+            btnScenario1.Enabled = True
+            btnScenario2.Enabled = True
+        End Try
+    End Function
+
+    Private Sub btnSAPLogin_MouseEnter(sender As Object, e As EventArgs) Handles btnSAPLogin.MouseEnter
+        btnSAPLogin.BackColor = Color.FromArgb(55, 71, 79)
+    End Sub
+
+    Private Sub btnSAPLogin_MouseLeave(sender As Object, e As EventArgs) Handles btnSAPLogin.MouseLeave
+        btnSAPLogin.BackColor = Color.FromArgb(55, 71, 79)
+    End Sub
+
+    Private Sub btnTemplate_MouseEnter(sender As Object, e As EventArgs) Handles btnTemplate.MouseEnter
+        btnTemplate.BackColor = Color.FromArgb(55, 71, 79)
+    End Sub
+
+    Private Sub btnTemplate_MouseLeave(sender As Object, e As EventArgs) Handles btnTemplate.MouseLeave
+        btnTemplate.BackColor = Color.FromArgb(55, 71, 79)
+    End Sub
+
+    Private Sub btnClose_Click(sender As Object, e As EventArgs) Handles btnClose.Click
+        End
+    End Sub
+
+    Private Sub btnSAPLogin_Click(sender As Object, e As EventArgs) Handles btnSAPLogin.Click
+        Form4.Show()
+    End Sub
+
+    Private Sub btnTemplate_Click(sender As Object, e As EventArgs) Handles btnTemplate.Click
+
+        Using ofd As New OpenFileDialog()
+            ofd.Title = "Select an Excel File"
+            ofd.Filter = "Excel Files (*.xlsx;*.xls;*.xlsm)|*.xlsx;*.xls;*.xlsm"
+            ofd.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+            ofd.RestoreDirectory = True
+
+            If ofd.ShowDialog() = DialogResult.OK Then
+                Dim sourceFile As String = ofd.FileName
+                Dim destinationFolder As String = "D:\Coefficient\Template"
+
+                Try
+                    ' Ensure destination folder exists
+                    If Not Directory.Exists(destinationFolder) Then
+                        Directory.CreateDirectory(destinationFolder)
+                    End If
+
+                    ' Purge ALL Excel files in the destination folder (Option B)
+                    ' Set includeSubfolders:=True if you also want to clear subfolders.
+                    PurgeExcelFiles(destinationFolder, includeSubfolders:=False)
+
+                    ' Destination path (same filename as source)
+                    Dim destinationFile As String = Path.Combine(destinationFolder, Path.GetFileName(sourceFile))
+
+                    ' Copy file (no overwrite needed since we purged)
+                    File.Copy(sourceFile, destinationFile, overwrite:=False)
+
+                    MessageBox.Show("File copied to: " & destinationFile, "Coefficient Inputting Automation",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+                Catch ex As UnauthorizedAccessException
+                    MessageBox.Show("Access denied. Check folder permissions or if files are read-only." &
+                                Environment.NewLine & ex.Message,
+                                "Permission Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+
+                Catch ex As IOException
+                    ' Common reasons: destination files in use/locked, disk issues
+                    MessageBox.Show("I/O error. Make sure no files in the destination are open in Excel and try again." &
+                                Environment.NewLine & ex.Message,
+                                "I/O Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+
+                Catch ex As Exception
+                    MessageBox.Show("An unexpected error occurred:" & Environment.NewLine & ex.Message,
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                End Try
+            End If
+        End Using
+
+    End Sub
+
+    Private Sub PurgeExcelFiles(folder As String, Optional includeSubfolders As Boolean = False)
+        Dim patterns As String() = {
+            "*.xlsx", "*.xls", "*.xlsm",
+            "~$*.xlsx", "~$*.xls", "~$*.xlsm" ' Excel temp/lock files
+        }
+
+        Dim searchOpt As SearchOption =
+            If(includeSubfolders, SearchOption.AllDirectories, SearchOption.TopDirectoryOnly)
+
+        For Each pattern In patterns
+            For Each filePath In Directory.EnumerateFiles(folder, pattern, searchOpt)
+                Try
+                    ' Clear read-only if set
+                    Dim attrs = File.GetAttributes(filePath)
+                    If (attrs And FileAttributes.ReadOnly) = FileAttributes.ReadOnly Then
+                        File.SetAttributes(filePath, attrs And Not FileAttributes.ReadOnly)
+                    End If
+
+                    File.Delete(filePath)
+
+                Catch ex As IOException
+                    ' Likely file in use; skip and continue.
+                    ' (Optionally log ex.Message)
+                Catch ex As UnauthorizedAccessException
+                    ' Permission issue; skip and continue.
+                    ' (Optionally log ex.Message)
+                End Try
+            Next
+        Next
+    End Sub
+
+    Private Sub Form3_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Me.Text = "Coefficient Inputting Automation"
+    End Sub
+
+    Private Sub btnMinimized_Click(sender As Object, e As EventArgs) Handles btnMinimized.Click
+        Me.WindowState = FormWindowState.Minimized
+    End Sub
+End Class
