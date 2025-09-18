@@ -213,5 +213,53 @@ DR1
 add objectives 
 add benefits
 
+-- Update 0421
+Got it 👍 Here’s a sample Objectives and Benefits section you can use in your proposal:
+
+
+---
+
+Objectives
+
+Automate the coefficient value input process into SAP using WinActor.
+
+Ensure accuracy and consistency of data entry by eliminating manual errors.
+
+Standardize the coefficient value template for easier processing.
+
+Generate a prooflist (via screenshots) to provide evidence of successful updates.
+
+Send automated email notifications to stakeholders after every update.
+
+Reduce operation time and free up manpower for higher-value tasks.
+
+
+
+---
+
+Benefits
+
+Accuracy: Minimizes human errors during SAP data entry.
+
+Efficiency: Speeds up processing time compared to manual input.
+
+Traceability: Prooflist screenshots serve as evidence for audit and verification.
+
+Transparency: Automated email notifications keep all stakeholders informed.
+
+Consistency: Standardized template ensures uniform data handling.
+
+Cost Savings: Reduces overtime and manual rework caused by entry mistakes.
+
+Scalability: RPA workflow can be expanded to other SAP processes in the future.
+
+
+
+---
+
+Do you want me to also make a table version (Objectives vs Benefits) so it looks more professional in your proposal?
+
+
+
 
 
