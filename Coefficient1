@@ -9,3 +9,156 @@ Highlight the ff:
 	Actions using IT System
 	Related IT Systems
 	Actors
+
+
+
+-- Update 1042AM
+Here’s a structured Operation Change Proposal draft based on your idea using WinActor for SAP automation:
+
+
+---
+
+Operation Change Proposal
+
+Title: Automation of SAP Coefficient Value Input and Prooflist Notification using WinActor
+
+
+---
+
+1. Background / Current Issues
+
+Currently, the process of inputting coefficient values into SAP is performed manually by operators. This manual method often results in the following challenges:
+
+Human Error: Mistyped or missed values during SAP entry.
+
+Time-Consuming: Manual input takes significant effort for repetitive data sets.
+
+Lack of Proof: No automatic generation of reference proof for validation.
+
+Delayed Notifications: Stakeholders are not immediately informed of updates.
+
+
+
+---
+
+2. Proposed Change in Operation
+
+The proposal introduces WinActor RPA (Robotic Process Automation) to automate the coefficient value entry and prooflist notification. The new operation will:
+
+1. Read Coefficient Value Template – WinActor will extract the coefficient values from a standardized Excel template.
+
+
+2. Automated SAP Input – WinActor will log into SAP and input the values directly into the required fields.
+
+
+3. Generate Prooflist – After input, WinActor will take screenshots of the updated entries as proof.
+
+
+4. Email Notification – WinActor will automatically compile the prooflist (screenshots) and send it via email to designated recipients for tracking and validation.
+
+
+
+
+---
+
+3. Operation Flow (New Process)
+
+Step 1 – Data Preparation:
+
+Operator prepares coefficient values in a pre-approved template (Excel/CSV).
+
+
+Step 2 – RPA Execution:
+
+Operator runs the WinActor bot.
+
+WinActor reads the template and launches SAP.
+
+
+Step 3 – Automated SAP Input:
+
+Bot navigates SAP menus and inputs values into correct fields.
+
+
+Step 4 – Prooflist Creation:
+
+Bot captures screenshots of completed entries as evidence.
+
+Screenshots are stored in a designated folder.
+
+
+Step 5 – Email Notification:
+
+Bot attaches prooflist screenshots to an auto-generated email.
+
+Email is sent to responsible team/stakeholders for confirmation of update.
+
+
+
+---
+
+4. Detailed Changes in Operation and System
+
+Operational Changes:
+
+Before: Manual entry of coefficient values by operators.
+
+After: Automated entry by WinActor bot.
+
+Before: No structured proof of updates.
+
+After: Screenshots stored and emailed automatically as prooflist.
+
+Before: Delayed communication to stakeholders.
+
+After: Instant email notification upon update.
+
+
+System Changes:
+
+Integration of WinActor RPA:
+
+Script to read coefficient template.
+
+SAP navigation sequence automation.
+
+Screenshot capture and storage.
+
+Email sending module (Outlook/SMTP integration).
+
+
+Template Standardization:
+
+Coefficient values must be maintained in a consistent format (Excel).
+
+Ensures WinActor bot can parse correctly.
+
+
+
+
+---
+
+5. Benefits of the New Operation
+
+Accuracy: Reduces human error during SAP data entry.
+
+Efficiency: Speeds up processing time for coefficient updates.
+
+Traceability: Prooflist ensures updates can be verified anytime.
+
+Transparency: Automatic notifications improve awareness and accountability.
+
+Scalability: Same automation can be extended to other SAP transactions.
+
+
+
+---
+
+✅ Highlighted Change in Operation:
+Manual data entry and validation → Automated SAP input with prooflist and email notification using WinActor.
+
+
+---
+
+Would you like me to format this proposal into a formal document style (Word/PDF-ready with tables/flow diagram) or keep it as a text-based draft for now?
+
