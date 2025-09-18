@@ -162,3 +162,56 @@ Manual data entry and validation → Automated SAP input with prooflist and emai
 
 Would you like me to format this proposal into a formal document style (Word/PDF-ready with tables/flow diagram) or keep it as a text-based draft for now?
 
+-- Update 0400PM
+
+
+DR2
+Develop a centralized program to execute scenarios in WinActor.
+
+Background:
+On a quarterly schedule OHG Coefficient is being inputted in GNS+ by Procurement members. The reference value is being provided by Business control based on Accounting calculation result for each EPPI cost center. Accuracy of the inputted data is of the essence for this process since it will affect the pricing of EPPI finished goods. On this process the only role of Procurement is just to input value and make sure the correctness of the inputted value.
+
+
+Manual verification of inputted data
+
+DR2
+Background / Overview
+Problems Encountered
+Objectives
+<
+The specific result that the system aims to achieve resolving the problems encountered.
+Show in figures as much as possible.
+
+Ex. To eliminate incorrect transactions. 
+5 Incorrect Transactions  0 Incorrect Transactions
+
+(Same as DR0 – add new information if needed)
+>
+
+Proposal
+<
+Discuss the new operation to resolve the problems encountered.
+Show in Flow Chart / Operation Flow
+Include detailed changes in Operation and System
+Put Images to help understand the operation
+>
+
+	<
+Show System Diagram
+>
+<
+Show System Design
+ - Screen Image
+ - Functions
+>
+
+Benefits
+Organization
+Schedule
+
+DR1
+add objectives 
+add benefits
+
+
+
