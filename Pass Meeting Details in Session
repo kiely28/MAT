@@ -1,0 +1,119 @@
+Got it 👍 you don’t want to query the DB again when you click StartMeeting — instead, you want to grab the meeting details directly from the GridView row and store them in Session.
+
+That’s even faster ✅ because the details are already in your GridView.
+
+
+---
+
+🔹 Update Your GridView Button
+
+Make sure your LinkButton passes the row index instead of just MeetingId so we can grab other fields easily.
+
+<asp:LinkButton ID="btnStartMeeting" runat="server"
+    CommandName="StartMeeting"
+    CommandArgument='<%# Container.DataItemIndex %>'
+    CssClass="btn btn-sm text-primary me-1"
+    ToolTip="Start Meeting">
+    <i class="far fa-eye"></i>
+</asp:LinkButton>
+
+
+---
+
+🔹 Code-Behind (gvMeetings_RowCommand)
+
+Now we’ll use the row index (CommandArgument) to access all meeting details from the row and put them into Session.
+
+protected void gvMeetings_RowCommand(object sender, GridViewCommandEventArgs e)
+{
+    if (e.CommandName == "StartMeeting")
+    {
+        int rowIndex = Convert.ToInt32(e.CommandArgument);
+        GridViewRow row = gvMeetings.Rows[rowIndex];
+
+        // Get values from GridView cells (adjust index if needed)
+        string meetingId = gvMeetings.DataKeys[rowIndex].Value.ToString();
+        string title = row.Cells[2].Text;   // Title column
+        string start = row.Cells[3].Text;   // Start Date column
+        string end = row.Cells[4].Text;     // End Date column
+        string location = row.Cells[5].Text; // Venue column
+
+        // Save to Session
+        Session["MeetingId"] = meetingId;
+        Session["Title"] = title;
+        Session["StartTime"] = start;
+        Session["EndTime"] = end;
+        Session["Location"] = location;
+
+        // (Optional) Update meeting status if still Scheduled
+        string connectionString = ConfigurationManager.ConnectionStrings["MeetingDb"].ConnectionString;
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        using (SqlCommand cmd = new SqlCommand("MA_UpdateMeetingStatus", conn))
+        {
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@MeetingID", meetingId);
+            cmd.Parameters.AddWithValue("@Status", "Ongoing");
+
+            conn.Open();
+            cmd.ExecuteNonQuery();
+        }
+
+        // Redirect without query string (details are in Session now)
+        Response.Redirect("meetingattendance.aspx");
+    }
+
+    else if (e.CommandName == "EditMeeting")
+    {
+        string meetingId = e.CommandArgument.ToString();
+        Response.Redirect($"EditMeeting.aspx?meetingId={meetingId}");
+    }
+
+    else if (e.CommandName == "DeleteMeeting")
+    {
+        string meetingId = e.CommandArgument.ToString();
+        DeleteMeeting(meetingId);
+        LoadMeetings();
+    }
+}
+
+
+---
+
+🔹 In meetingattendance.aspx.cs
+
+Now you just read from Session:
+
+protected void Page_Load(object sender, EventArgs e)
+{
+    if (!IsPostBack)
+    {
+        if (Session["MeetingId"] == null)
+        {
+            Response.Redirect("meetinglist.aspx");
+            return;
+        }
+
+        lblTitle.Text = Session["Title"].ToString();
+        lblStart.Text = Session["StartTime"].ToString();
+        lblEnd.Text = Session["EndTime"].ToString();
+        lblLocation.Text = Session["Location"].ToString();
+    }
+}
+
+
+---
+
+✅ This way:
+
+No DB query needed to load meeting details.
+
+All details come straight from the GridView.
+
+Tapping is very fast, because only the attendance insert hits the DB.
+
+
+
+---
+
+Do you want me to also format the StartTime and EndTime properly (MM/dd/yyyy hh:mm tt) when saving to Session (since GridView sometimes outputs raw values)?
+
