@@ -497,3 +497,95 @@ namespace meetingattendance
 
     }
 }
+
+
+-- Update
+
+Got it 👍 thanks for clarifying.
+
+Right now, in your Tap In block, you correctly reset and re-focus the txtCardSerial.
+But in your Tap Out (else part), you also clear it but you don’t re-focus in all cases consistently.
+
+Here’s the relevant part of your code:
+
+else // Out
+{
+    int rowsAffected = 0;
+
+    using (SqlCommand updateCmd = new SqlCommand("MA_UpdateAttendeeTimeout", conn))
+    {
+        updateCmd.CommandType = CommandType.StoredProcedure;
+        updateCmd.Parameters.AddWithValue("@MeetingId", meetingId);
+        updateCmd.Parameters.AddWithValue("@CardSerialNo", cardSerial);
+
+        rowsAffected = updateCmd.ExecuteNonQuery();
+
+        if (rowsAffected > 0)
+            ShowAlert("You have tapped out successfully!", empName, dept, "alert-success");
+        else
+            ShowAlert("Already tapped out or no tap-in found", "", "", "alert-danger");
+    }
+}
+
+// Reset input and focus
+txtCardSerial.Text = "";
+ScriptManager.RegisterStartupScript(this, GetType(), "setFocus",
+    $"document.getElementById('{txtCardSerial.ClientID}').focus();", true);
+
+Why focus sometimes fails
+
+ScriptManager.RegisterStartupScript with the same key "setFocus" can get overridden if you call it more than once on the same postback.
+
+In the Tap Out flow, you only register focus once at the very end.
+
+If another script (like fadeOutAlert()) runs after it, the focus may get lost.
+
+
+
+---
+
+✅ Fix Option 1: Use a unique key for each focus script
+
+ScriptManager.RegisterStartupScript(this, GetType(), Guid.NewGuid().ToString(),
+    $"document.getElementById('{txtCardSerial.ClientID}').focus();", true);
+
+This ensures the focus script always runs, because each registration has a unique key.
+
+
+---
+
+✅ Fix Option 2: Force focus on every page load
+
+In Page_Load, after your existing line:
+
+Page.SetFocus(txtCardSerial);
+
+also add:
+
+ScriptManager.RegisterStartupScript(this, GetType(), "focusOnLoad",
+    $"document.getElementById('{txtCardSerial.ClientID}').focus();", true);
+
+That way, even after Tap Out, the field regains focus.
+
+
+---
+
+✅ Fix Option 3: Client-side only (simpler)
+
+At the bottom of your .aspx page, add:
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById('<%= txtCardSerial.ClientID %>').focus();
+    });
+</script>
+
+This guarantees focus every time the page reloads.
+
+
+---
+
+👉 If you want the smoothest tap-in / tap-out flow, I’d recommend Option 1 (unique key per focus script), because it guarantees focus after every postback without interfering with your alerts.
+
+Do you want me to rewrite your txtCardSerial_TextChanged method with the unique focus script fix applied?
+
