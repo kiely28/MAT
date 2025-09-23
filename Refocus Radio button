@@ -1,0 +1,40 @@
+Yes 👍 — with your current code, both Tap In and Tap Out paths end with this block:
+
+// Reset input and focus
+txtCardSerial.Text = "";
+ScriptManager.RegisterStartupScript(this, GetType(), "setFocus",
+    $"document.getElementById('{txtCardSerial.ClientID}').focus();", true);
+
+So in theory, both Tap In and Tap Out should focus back to txtCardSerial after the postback.
+
+
+---
+
+Why you might see different behavior
+
+ASP.NET’s ScriptManager.RegisterStartupScript uses a script key ("setFocus" in your case).
+If the same key is reused multiple times during one request, only the last one wins.
+If another script (e.g. your fadeOutAlert()) is registered after it with the same key, your focus script gets overridden.
+
+Sometimes Bootstrap’s modal/alert animations can also steal focus back to the button you clicked.
+
+
+
+---
+
+✅ How to make sure both Tap In and Tap Out always refocus
+
+Change the focus script registration to use a unique key every time:
+
+// Reset input and focus
+txtCardSerial.Text = "";
+ScriptManager.RegisterStartupScript(this, GetType(), Guid.NewGuid().ToString(),
+    $"document.getElementById('{txtCardSerial.ClientID}').focus();", true);
+
+This way, whether you Tap In or Tap Out, the focus script always runs.
+
+
+---
+
+👉 Do you want me to adjust your txtCardSerial_TextChanged method so it’s guaranteed to refocus on txtCardSerial after both Tap In and Tap Out?
+
