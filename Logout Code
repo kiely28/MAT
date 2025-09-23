@@ -1,0 +1,99 @@
+Perfect 👍 I’ll give you the full setup so that once a user logs out or their session expires, they’ll automatically be redirected back to Login.aspx.
+
+
+---
+
+🔹 Step 1: Add Session Check in Page_Load
+
+For every protected page (like your Tapping.aspx), add this check at the top of Page_Load:
+
+protected void Page_Load(object sender, EventArgs e)
+{
+    if (Session["UserId"] == null) // or any session you set at login
+    {
+        Response.Redirect("~/Login.aspx");
+        return;
+    }
+
+    // your normal page code continues here
+}
+
+> Replace "UserId" with whatever session variable you’re using to identify a logged-in user.
+
+
+
+
+---
+
+🔹 Step 2: Set Session on Login
+
+When the user logs in successfully (inside your Login.aspx.cs):
+
+protected void btnLogin_Click(object sender, EventArgs e)
+{
+    // Example login validation (replace with your DB validation)
+    string username = txtUsername.Text.Trim();
+    string password = txtPassword.Text.Trim();
+
+    if (username == "admin" && password == "123") // just sample
+    {
+        Session["UserId"] = username; // set session
+        Response.Redirect("~/Tapping.aspx"); // go to main page
+    }
+    else
+    {
+        lblMessage.Text = "Invalid login!";
+    }
+}
+
+
+---
+
+🔹 Step 3: Logout Button
+
+You already have this:
+
+protected void btnLogout_Click(object sender, EventArgs e)
+{
+    Session.Clear();
+    Session.Abandon();
+
+    if (Request.Cookies[".ASPXAUTH"] != null)
+    {
+        HttpCookie authCookie = new HttpCookie(".ASPXAUTH");
+        authCookie.Expires = DateTime.Now.AddDays(-1);
+        Response.Cookies.Add(authCookie);
+    }
+
+    Response.Redirect("~/Login.aspx");
+}
+
+
+---
+
+🔹 Step 4: Prevent Browser Back After Logout
+
+In Login.aspx.cs (inside Page_Load):
+
+protected void Page_Load(object sender, EventArgs e)
+{
+    Response.Cache.SetCacheability(HttpCacheability.NoCache);
+    Response.Cache.SetExpires(DateTime.UtcNow.AddHours(-1));
+    Response.Cache.SetNoStore();
+}
+
+
+---
+
+✅ Now:
+
+If a user tries to open Tapping.aspx without logging in, they’ll be redirected to Login.aspx.
+
+After Logout, the session is cleared, and even if they press Back, they’ll still get redirected to login.
+
+
+
+---
+
+Do you want me to also make the session timeout automatic (e.g., auto-logout after 15 minutes of inactivity)?
+
