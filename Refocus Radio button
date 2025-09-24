@@ -165,3 +165,73 @@ AJAX + WebMethod → cleaner, faster, more control, but requires rewriting txtCa
 
 👉 Do you want me to convert your current txtCardSerial_TextChanged logic into a WebMethod (Option 2), or keep it inside an UpdatePanel (Option 1, easiest drop-in)?
 
+
+Update 0836
+Got it 👍 thanks for clarifying.
+
+Here’s why:
+
+Wrapping things in UpdatePanel prevents a full page reload, but your radio button click may still trigger a postback.
+
+After any (async) postback, ASP.NET won’t automatically put the cursor back in txtCardSerial unless you tell it to.
+
+
+We can fix this in two ways:
+
+
+---
+
+✅ Option A: Re-focus from server side
+
+In your radio button’s CheckedChanged event (code-behind):
+
+protected void rdoTapIn_CheckedChanged(object sender, EventArgs e)
+{
+    txtCardSerial.Focus();
+}
+
+protected void rdoTapOut_CheckedChanged(object sender, EventArgs e)
+{
+    txtCardSerial.Focus();
+}
+
+⚠️ But with UpdatePanel, sometimes Focus() doesn’t persist after async postback. That’s where JavaScript helps.
+
+
+---
+
+✅ Option B: Re-focus with JavaScript after partial postback (recommended)
+
+ASP.NET AJAX gives you the Sys.WebForms.PageRequestManager events.
+We can hook into them to always refocus txtCardSerial.
+
+Add this script to your .aspx (below your UpdatePanel, inside <script>):
+
+<script type="text/javascript">
+    // After every async postback (like radio button click inside UpdatePanel)
+    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
+        var txt = document.getElementById('<%= txtCardSerial.ClientID %>');
+        if (txt) {
+            txt.focus();
+        }
+    });
+</script>
+
+
+---
+
+What happens now:
+
+When you click Tap In or Tap Out, the panel updates via AJAX.
+
+As soon as the update finishes, the script automatically re-focuses txtCardSerial.
+
+Same behavior when tapping a card → focus stays in the textbox.
+
+
+
+---
+
+👉 Do you want me to merge this JavaScript fix directly into your current .aspx snippet (with the UpdatePanel) so you can copy-paste it as one piece?
+
+
