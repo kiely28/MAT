@@ -1,218 +1,44 @@
-Yes 👍 — with your current code, both Tap In and Tap Out paths end with this block:
+Got it 👍 I see your code already sets focus on txtCardSerial after a tap (txtCardSerial_TextChanged) and after Page_Load.
+But right now, when you click Tap In or Tap Out, it only updates the hidden field — it doesn’t explicitly set focus back to txtCardSerial.
 
-// Reset input and focus
-txtCardSerial.Text = "";
-ScriptManager.RegisterStartupScript(this, GetType(), "setFocus",
-    $"document.getElementById('{txtCardSerial.ClientID}').focus();", true);
+You just need to add a little JavaScript when the radio button changes. That way, after clicking In or Out, the cursor immediately goes back to the textbox.
 
-So in theory, both Tap In and Tap Out should focus back to txtCardSerial after the postback.
+Here’s the fix:
 
-
----
-
-Why you might see different behavior
-
-ASP.NET’s ScriptManager.RegisterStartupScript uses a script key ("setFocus" in your case).
-If the same key is reused multiple times during one request, only the last one wins.
-If another script (e.g. your fadeOutAlert()) is registered after it with the same key, your focus script gets overridden.
-
-Sometimes Bootstrap’s modal/alert animations can also steal focus back to the button you clicked.
-
-
-
----
-
-✅ How to make sure both Tap In and Tap Out always refocus
-
-Change the focus script registration to use a unique key every time:
-
-// Reset input and focus
-txtCardSerial.Text = "";
-ScriptManager.RegisterStartupScript(this, GetType(), Guid.NewGuid().ToString(),
-    $"document.getElementById('{txtCardSerial.ClientID}').focus();", true);
-
-This way, whether you Tap In or Tap Out, the focus script always runs.
-
-
----
-
-👉 Do you want me to adjust your txtCardSerial_TextChanged method so it’s guaranteed to refocus on txtCardSerial after both Tap In and Tap Out?
-
-
-
--- Update Panel
-Good question 👍 Right now, your tapping (txtCardSerial_TextChanged) does a full page postback — meaning the entire page refreshes whenever someone taps a card.
-
-To make it smoother, you can handle taps with ASP.NET AJAX so only the alert panel updates (no full reload).
-
-
----
-
-✅ Option 1: Use UpdatePanel (fastest for Web Forms)
-
-Wrap the controls that need updating (textbox, alert panel) inside an UpdatePanel.
-
-Example
-
-<asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
-
-<asp:UpdatePanel ID="updTapArea" runat="server" UpdateMode="Conditional">
-    <ContentTemplate>
-        <div class="mb-3">
-            <asp:TextBox ID="txtCardSerial" runat="server" CssClass="form-control custom-input"
-                placeholder="Place your ID card on the reader" TextMode="Password"
-                AutoPostBack="true" OnTextChanged="txtCardSerial_TextChanged" />
-        </div>
-
-        <div class="mt-3">
-            <asp:Panel ID="pnlAlert" runat="server" Visible="false"
-                CssClass="alert alert-dismissible fade show" role="alert">
-                <h5 class="alert-heading">
-                    <asp:Label ID="lblAlertHeading" runat="server"></asp:Label>
-                </h5>
-                <p class="mb-0 fs-5">
-                    <asp:Label ID="lblAlertName" runat="server"></asp:Label>
-                </p>
-                <p class="fs-6">
-                    <asp:Label ID="lblAlertDept" runat="server"></asp:Label>
-                </p>
-                <p class="mb-0">
-                    <asp:Label ID="lblAlertDateTime" runat="server"></asp:Label>
-                </p>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </asp:Panel>
-        </div>
-    </ContentTemplate>
-    <Triggers>
-        <!-- txtCardSerial triggers async postback -->
-        <asp:AsyncPostBackTrigger ControlID="txtCardSerial" EventName="TextChanged" />
-    </Triggers>
-</asp:UpdatePanel>
-
-What changes
-
-Only the UpdatePanel content updates when a card is tapped.
-
-The navbar, buttons, and rest of the page won’t reload.
-
-Your existing server-side code (txtCardSerial_TextChanged) still works.
-
-
-
----
-
-✅ Option 2: Use jQuery AJAX ($.ajax) + WebMethod
-
-More modern, avoids ViewState overhead.
-
-1. Add a static WebMethod in your code-behind:
-
-[System.Web.Services.WebMethod]
-public static string ProcessTap(string cardSerial, string tapMode, string meetingId)
-{
-    // Same logic as txtCardSerial_TextChanged, but simplified
-    // return JSON or string result
-
-    return "You have tapped in successfully!";
-}
-
-
-2. Call it via AJAX in JavaScript:
-
-function tapCard(cardSerial, tapMode, meetingId) {
-    $.ajax({
-        type: "POST",
-        url: "meetingattendance.aspx/ProcessTap",
-        data: JSON.stringify({ cardSerial: cardSerial, tapMode: tapMode, meetingId: meetingId }),
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (response) {
-            let message = response.d;
-            $("#<%= pnlAlert.ClientID %>").show().find("h5").text(message);
-            $("#<%= txtCardSerial.ClientID %>").val("").focus();
-        },
-        error: function (xhr, status, error) {
-            alert("Error: " + error);
-        }
-    });
-}
-
-
-3. Trigger this when the textbox changes:
-
-$("#<%= txtCardSerial.ClientID %>").on("change", function () {
-    let cardSerial = $(this).val();
-    let tapMode = $("input[name='tapMode']:checked").val();
-    let meetingId = $("#<%= hfMeetingID.ClientID %>").val();
-
-    tapCard(cardSerial, tapMode, meetingId);
-});
-
-
-
-
----
-
-⚖️ Which should you use?
-
-UpdatePanel → easier, minimal code changes, works with your existing event handler.
-
-AJAX + WebMethod → cleaner, faster, more control, but requires rewriting txtCardSerial_TextChanged logic into a static method.
-
-
-
----
-
-👉 Do you want me to convert your current txtCardSerial_TextChanged logic into a WebMethod (Option 2), or keep it inside an UpdatePanel (Option 1, easiest drop-in)?
-
-
-Update 0836
-Got it 👍 thanks for clarifying.
-
-Here’s why:
-
-Wrapping things in UpdatePanel prevents a full page reload, but your radio button click may still trigger a postback.
-
-After any (async) postback, ASP.NET won’t automatically put the cursor back in txtCardSerial unless you tell it to.
-
-
-We can fix this in two ways:
-
-
----
-
-✅ Option A: Re-focus from server side
-
-In your radio button’s CheckedChanged event (code-behind):
-
-protected void rdoTapIn_CheckedChanged(object sender, EventArgs e)
-{
-    txtCardSerial.Focus();
-}
-
-protected void rdoTapOut_CheckedChanged(object sender, EventArgs e)
-{
-    txtCardSerial.Focus();
-}
-
-⚠️ But with UpdatePanel, sometimes Focus() doesn’t persist after async postback. That’s where JavaScript helps.
-
-
----
-
-✅ Option B: Re-focus with JavaScript after partial postback (recommended)
-
-ASP.NET AJAX gives you the Sys.WebForms.PageRequestManager events.
-We can hook into them to always refocus txtCardSerial.
-
-Add this script to your .aspx (below your UpdatePanel, inside <script>):
+Update your existing JavaScript for the radio buttons:
 
 <script type="text/javascript">
-    // After every async postback (like radio button click inside UpdatePanel)
-    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
-        var txt = document.getElementById('<%= txtCardSerial.ClientID %>');
-        if (txt) {
-            txt.focus();
+    // When user changes radio button, update hidden field and focus textbox
+    document.querySelectorAll('input[name="tapMode"]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            document.getElementById('<%= hfTapMode.ClientID %>').value = this.value;
+
+            // ✅ Set focus to txtCardSerial
+            var txtCardSerial = document.getElementById('<%= txtCardSerial.ClientID %>');
+            if (txtCardSerial) {
+                txtCardSerial.focus();
+            }
+        });
+    });
+
+    // On page load, restore the radio button from hidden field
+    document.addEventListener("DOMContentLoaded", function () {
+        var savedMode = document.getElementById('<%= hfTapMode.ClientID %>').value;
+
+        if (!savedMode) {
+            savedMode = "In"; // default
+            document.getElementById('<%= hfTapMode.ClientID %>').value = savedMode;
+        }
+
+        // Uncheck all radios first
+        document.querySelectorAll('input[name="tapMode"]').forEach(function (r) {
+            r.checked = false;
+        });
+
+        // Check only the saved one
+        var radioToCheck = document.getElementById("radio" + savedMode);
+        if (radioToCheck) {
+            radioToCheck.checked = true;
         }
     });
 </script>
@@ -220,18 +46,17 @@ Add this script to your .aspx (below your UpdatePanel, inside <script>):
 
 ---
 
-What happens now:
+✅ With this change:
 
-When you click Tap In or Tap Out, the panel updates via AJAX.
+If you click Tap In, focus jumps to txtCardSerial.
 
-As soon as the update finishes, the script automatically re-focuses txtCardSerial.
+If you click Tap Out, focus also jumps to txtCardSerial.
 
-Same behavior when tapping a card → focus stays in the textbox.
+After every tap (postback), your existing Page.SetFocus(txtCardSerial); in code-behind keeps it focused.
 
 
 
 ---
 
-👉 Do you want me to merge this JavaScript fix directly into your current .aspx snippet (with the UpdatePanel) so you can copy-paste it as one piece?
-
+Do you also want me to make the Enter key automatically clear and re-focus txtCardSerial without triggering a full page reload? That would make the tapping smoother.
 
