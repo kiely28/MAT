@@ -1,0 +1,21 @@
+Sub SetFiscalQuarterRange()
+    Dim currentMonth As Integer
+    currentMonth = Month(Date) ' Get the current month
+
+    With ThisWorkbook.Sheets(1)
+        Select Case currentMonth
+            Case 4 To 6 ' April to June
+                .Range("C9").Value = 1
+                .Range("C10").Value = 3
+            Case 7 To 9 ' July to September
+                .Range("C9").Value = 4
+                .Range("C10").Value = 6
+            Case 10 To 12 ' October to December
+                .Range("C9").Value = 7
+                .Range("C10").Value = 9
+            Case 1 To 3 ' January to March
+                .Range("C9").Value = 10
+                .Range("C10").Value = 12
+        End Select
+    End With
+End Sub
