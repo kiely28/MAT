@@ -19,3 +19,72 @@ Sub SetFiscalQuarterRange()
         End Select
     End With
 End Sub
+
+Update 12:40
+Perfect 👍 You want column D to display the month names corresponding to the numbers in column C.
+
+For example:
+
+If C9 = 1, then D9 = "Apr"
+
+If C10 = 3, then D10 = "Jun"
+
+
+We can do this by mapping the fiscal numbers (1–12) to actual month names:
+
+Sub SetFiscalQuarterRange()
+    Dim currentMonth As Integer
+    
+    ' Add 1 month to today's date, then extract the month number
+    currentMonth = Month(DateAdd("m", 1, Date))
+    
+    With ThisWorkbook.Sheets(1)
+        Select Case currentMonth
+            Case 4 To 6 ' April to June
+                .Range("C9").Value = 1
+                .Range("C10").Value = 3
+            Case 7 To 9 ' July to September
+                .Range("C9").Value = 4
+                .Range("C10").Value = 6
+            Case 10 To 12 ' October to December
+                .Range("C9").Value = 7
+                .Range("C10").Value = 9
+            Case 1 To 3 ' January to March
+                .Range("C9").Value = 10
+                .Range("C10").Value = 12
+        End Select
+        
+        ' Now set the month names in column D based on column C
+        .Range("D9").Value = GetFiscalMonthName(.Range("C9").Value)
+        .Range("D10").Value = GetFiscalMonthName(.Range("C10").Value)
+    End With
+End Sub
+
+' Function to return month name based on fiscal numbering
+Function GetFiscalMonthName(fiscalNum As Integer) As String
+    Select Case fiscalNum
+        Case 1: GetFiscalMonthName = "Apr"
+        Case 2: GetFiscalMonthName = "May"
+        Case 3: GetFiscalMonthName = "Jun"
+        Case 4: GetFiscalMonthName = "Jul"
+        Case 5: GetFiscalMonthName = "Aug"
+        Case 6: GetFiscalMonthName = "Sep"
+        Case 7: GetFiscalMonthName = "Oct"
+        Case 8: GetFiscalMonthName = "Nov"
+        Case 9: GetFiscalMonthName = "Dec"
+        Case 10: GetFiscalMonthName = "Jan"
+        Case 11: GetFiscalMonthName = "Feb"
+        Case 12: GetFiscalMonthName = "Mar"
+    End Select
+End Function
+
+✅ Example results:
+
+If today = Sept 25, then currentMonth = 10 → Oct.
+→ C9 = 7, D9 = "Oct"
+→ C10 = 9, D10 = "Dec"
+
+
+Do you also want me to make it auto-fill for an entire range (like C9:C20 mapping to D9:D20), instead of just two cells?
+
+
