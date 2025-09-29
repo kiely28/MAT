@@ -1,0 +1,326 @@
+Nice — here’s a single, clean step-by-step user manual that walks a user through the whole flow: Login → Dashboard → Meetings List → Meeting Attendance → View Attendees / View Meeting Details. I kept each task short and actionable so you can copy/paste into a help page or print it.
+
+Login (Access the system)
+
+1. Open your browser and navigate to the app URL (example: https://yourserver/login.aspx).
+
+
+2. On the Login card:
+
+1. Enter your Username.
+
+
+2. Enter your Password (characters are hidden while typing).
+
+
+3. (Optional) Click Forgot password? if you need to reset your password.
+
+
+4. Click Log in.
+
+
+
+
+3. Expected result:
+
+If credentials are valid → you are redirected to the Dashboard.
+
+If invalid → an error message appears (e.g., “Invalid username or password”). Re-enter details or request help from admin.
+
+
+
+
+Dashboard (Summary & navigation)
+
+1. Purpose: quick overview of meetings and their statuses.
+
+
+2. What you see:
+
+Top navigation: Dashboard, Meetings, System Maintenance, user icon.
+
+Summary cards: Upcoming, Ongoing, Missed, Completed (each shows a count and a View Details link).
+
+
+
+3. How to use:
+
+1. Click a summary card’s View Details to open a filtered meetings list for that status.
+
+
+2. Click Dashboard at any time to return here.
+
+
+
+
+4. Expected result:
+
+Clicking a card or View Details leads to the Meetings page filtered by that status.
+
+
+
+
+Meetings List (view, create, edit, delete)
+
+1. Access: Click Meetings in the top navigation.
+
+
+2. Page elements:
+
++ Create New Meeting button (top-left).
+
+Table columns: #, Meeting ID, Title, Start Date, End Date, Venue, Status, Actions (eye/edit/trash icons).
+
+
+
+3. Create a new meeting:
+
+1. Click + Create New Meeting.
+
+
+2. Fill in required fields: Title, Start Date/Time, End Date/Time, Venue, (optional) participant list or notes.
+
+
+3. Click Save or Create.
+
+
+4. Expected: system generates a unique Meeting ID and the new meeting appears in the list with status Scheduled.
+
+
+
+
+4. View meeting details:
+
+1. In the table, click the eye icon (View).
+
+
+2. Expected: opens meeting details page (meeting title, schedule, venue, description, attendees).
+
+
+
+
+5. Edit a meeting:
+
+1. Click the pencil icon.
+
+
+2. Update fields as needed.
+
+
+3. Click Save.
+
+
+4. Note: editing ongoing meetings should be limited—avoid changing start time while session is active.
+
+
+
+
+6. Delete a meeting:
+
+1. Click the trash icon.
+
+
+2. Confirm the deletion when prompted.
+
+
+3. Warning: deletion is permanent (unless system implements a soft-delete).
+
+
+
+
+7. Expected behavior & tips:
+
+Status automatically changes depending on current time (Scheduled → Ongoing → Completed) or admin actions (End Meeting).
+
+If you can’t see Create/Edit/Delete options, you likely lack necessary permissions (contact admin).
+
+
+
+
+Meeting Attendance (tap IN / OUT)
+
+1. Access:
+
+From Meetings List, click the eye icon on a meeting, then click Open or the Meeting Attendance view.
+
+
+
+2. Page elements:
+
+Meeting header: Title, Venue, Start/End times.
+
+Large In button (blue) and Out button (gray).
+
+ID card input box with placeholder: “Place your ID card on the reader”.
+
+Right-side action buttons: View Attendees, End Meeting.
+
+
+
+3. Record an IN (participant arrival):
+
+1. Ensure the reader (RFID/Barcode) is connected and working.
+
+
+2. Click In (optional — the system may default to In mode).
+
+
+3. Participant places/swipes their ID card on the reader or types card number into the input box.
+
+
+4. System logs Time In for that participant and displays confirmation (visual or toast).
+
+
+
+
+4. Record an OUT (participant leaves):
+
+1. Click Out (if required by workflow).
+
+
+2. Participant places/swipes their ID card (or types card ID).
+
+
+3. System logs Time Out for that participant.
+
+
+
+
+5. End the meeting:
+
+1. After the session finishes, click End Meeting.
+
+
+2. Confirm when prompted.
+
+
+3. Result: meeting status set to Completed and further taps are ignored (unless reopened by admin).
+
+
+
+
+6. Expected results:
+
+Each tap stores a timestamp and associates it with the employee record.
+
+If a Time Out is missing, the attendee remains listed as not signed out.
+
+
+
+
+View Attendees / View Meeting Details
+
+1. Access:
+
+On the meeting attendance page, click View Attendees or from Meetings List click eye and then View Attendees.
+
+
+
+2. Page elements:
+
+Table columns: #, ID, Name, Department, Time In, Time Out.
+
+
+
+3. How to use:
+
+1. Review Time In / Time Out timestamps for each attendee.
+
+
+2. Use this list to verify who attended and whether they signed out.
+
+
+3. Export or print (if feature exists) for attendance records.
+
+
+
+
+4. Interpreting the table:
+
+Empty Time Out indicates attendee hasn’t tapped out yet.
+
+Multiple entries per user indicate multiple taps (depending on business rules).
+
+
+
+5. Troubleshooting:
+
+If an expected attendee doesn’t appear, verify their card number is registered in the employee database.
+
+If Time In shows wrong time, check server time/timezone settings.
+
+
+
+
+Common Troubleshooting & Tips
+
+Reader not registering cards:
+
+Verify physical connection (USB/COM), reader drivers, and correct reader mode.
+
+Check browser focus: the card input box often needs focus to accept keyboard emulation readers.
+
+
+“Invalid card” or no employee found:
+
+Ensure employee card is registered and linked to employee ID in the system DB.
+
+
+Timestamps wrong:
+
+Check server clock and timezone settings.
+
+
+Cannot End Meeting / Actions disabled:
+
+Check your role/permissions. Admins have more controls.
+
+
+Accidental deletion:
+
+Verify if your system supports soft delete (trash/recover) — otherwise contact database admin.
+
+
+
+Permissions & Roles (quick notes)
+
+Regular users: likely can tap IN/OUT and view attendees.
+
+Organizers/Facilitators: create and edit meetings, open attendance page.
+
+Admins: system maintenance, manage users, delete meetings, and recover records (if available).
+
+
+Quick Reference (button/icons)
+
+Log in — authenticate.
+
+Dashboard — summary overview.
+
+Meetings — open meeting management.
+
++ Create New Meeting — schedule a meeting.
+
+Eye icon — View meeting details / open attendance page.
+
+Pencil icon — Edit meeting.
+
+Trash icon — Delete meeting.
+
+In / Out — record attendance.
+
+View Attendees — see attendance sheet.
+
+End Meeting — finalize meeting and close attendance.
+
+
+
+---
+
+If you want, I can:
+
+Convert this into a printable single-page PDF or Word doc (I can produce the content now if you want — tell me which format).
+
+Add screenshots with numbered callouts for each step using your actual images.
+
+
