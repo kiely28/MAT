@@ -324,3 +324,269 @@ Convert this into a printable single-page PDF or Word doc (I can produce the con
 Add screenshots with numbered callouts for each step using your actual images.
 
 
+
+-- Update 1244
+Perfect — let’s extend your manual to include SSRS (SQL Server Reporting Services) Reporting Tool that mirrors your View Attendees table but pulls directly from the database.
+
+Here’s a clear step-by-step explanation + user manual section you can give to your users.
+
+
+---
+
+📊 SSRS Reporting Tool – User Manual
+
+🎯 Purpose
+
+The SSRS report is designed to display meeting attendance records similar to the View Attendees page in your app.
+It retrieves data from the database, including:
+
+Meeting ID
+
+Employee ID and Name
+
+Department
+
+Time In / Time Out
+
+Created By (the user who created the meeting record)
+
+
+This report is useful for auditing and exporting official attendance records.
+
+
+---
+
+🔑 Accessing the Report
+
+1. Open your browser.
+
+
+2. Go to your SSRS Report Manager URL, usually something like:
+
+http://<server-name>/Reports
+
+or
+
+http://<server-name>/Reports/Pages/Folder.aspx
+
+
+3. Navigate to the folder where your IT/admin deployed the report (example: MeetingReports).
+
+
+4. Click on Meeting Attendance Report.
+
+
+
+
+---
+
+🖱 Running the Report
+
+1. When you open the report, you’ll see filter parameters at the top (if configured):
+
+Meeting ID (enter or select a meeting ID, e.g., MA-202509-006).
+
+Date Range (optional — filter meetings within a start and end date).
+
+Created By (optional — select the meeting organizer).
+
+
+
+2. Select your filters.
+
+
+3. Click View Report.
+
+
+
+
+---
+
+📋 Report Output (Table Layout)
+
+The report generates a table similar to your View Attendees page:
+
+#	Meeting ID	ID	Name	Department	Time In	Time Out	Created By
+
+1	MA-202509-006	001	King Banatlao Evangelista	ISD	09-29-2025 10:50 PM	(empty)	AdminUser
+2	MA-202509-006	002	Juan Dela Cruz	HRD	09-29-2025 10:52 PM	09-29-2025 11:45 PM	AdminUser
+
+
+Columns explained:
+
+# → Row number (sequential).
+
+Meeting ID → Unique identifier of the meeting.
+
+ID → Employee ID.
+
+Name → Full employee name.
+
+Department → Department of employee.
+
+Time In → Date and time of tap-in.
+
+Time Out → Date and time of tap-out.
+
+Created By → Username of the meeting creator.
+
+
+
+---
+
+📤 Exporting the Report
+
+1. After running the report, look at the top-right of the SSRS toolbar.
+
+
+2. Click the Export dropdown (usually a disk icon or "Save").
+
+
+3. Choose your format:
+
+Excel (.xlsx) – for further data manipulation.
+
+PDF – for printing/sharing official reports.
+
+Word – if you need editable text.
+
+
+
+4. Save the exported file to your computer.
+
+
+
+
+---
+
+🔍 Common Use Cases
+
+HR/Training needs to verify attendance for compliance.
+
+Audit team checks who created the meeting and confirms entries.
+
+Managers export reports for employee evaluations or training records.
+
+Admin compares Meeting ID logs vs System Logs.
+
+
+
+---
+
+⚠️ Troubleshooting
+
+No data appears:
+
+Verify the Meeting ID exists.
+
+Check the Date Range filter.
+
+
+Created By missing:
+
+Confirm your SQL query includes the CreatedBy column from tbl_Meetings.
+
+
+Export errors:
+
+Try a different format (Excel/PDF).
+
+If still failing, report to IT for SSRS log review.
+
+
+
+
+---
+
+👉 In summary:
+This SSRS report acts as the official printable version of your attendance sheet, with the added benefit of tracking who created the meeting.
+
+
+---
+
+Do you want me to also write the SQL query + SSRS dataset structure that powers this report, so you (or your IT team) can deploy it directly?
+
+-- Update Meeting List 1244
+Perfect 👍 we’ll extend your User Manual for the Meeting List page to explain the new row highlight logic.
+
+Here’s the updated manual section (with your condition clearly explained):
+
+
+---
+
+📖 Meeting Attendance Tapping – User Manual (Extended)
+
+📂 Meetings List Page
+
+The Meetings List page shows all scheduled meetings in a table format. Each row contains details like:
+
+Meeting ID
+
+Title
+
+Start Date / End Date
+
+Venue
+
+Status
+
+Actions (View, Edit, Delete)
+
+
+
+---
+
+🎨 Row Highlighting Rules
+
+To help users quickly identify the status of meetings, rows are highlighted with colors:
+
+🔴 Light Red Row →
+
+The meeting’s End Date/Time has already passed
+
+Status = Scheduled (meaning the meeting was not started or properly ended)
+
+
+🟡 Light Yellow Row →
+
+The meeting’s End Date/Time has already passed
+
+Status = Ongoing (meaning the meeting is still considered active, even though the scheduled time ended)
+
+
+
+
+---
+
+📌 Example
+
+#	Meeting ID	Title	Start Date	End Date	Venue	Status	Row Color
+
+1	MA-202509-006	Training 01	09-30-2025 10:09 pm	09-30-2025 11:09 pm	F1	Scheduled	🔴 Light Red
+2	MA-202509-007	Training 02	09-30-2025 1:00 pm	09-30-2025 2:00 pm	F2	Ongoing	🟡 Light Yellow
+
+
+
+---
+
+🛠 Actions
+
+From the Actions column:
+
+👁 View – Open the meeting attendance page
+
+✏ Edit – Modify meeting details
+
+🗑 Delete – Remove the meeting
+
+
+
+---
+
+👉 This way, users can immediately know which meetings are overdue just by looking at the table.
+
+
+---
+
+Would you like me to merge this section with the Login → Dashboard → Meetings → Attendance → View Attendees manual I wrote earlier into one full manual document (PDF/Word), so you can distribute it directly to your users?
+
