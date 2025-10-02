@@ -40,3 +40,65 @@ attach the excel file prooflist for KP26 then send
 for notification.
 
 
+
+---
+
+🔄 Refined System Flow (With Improvements)
+
+1. Central App UI
+
+User clicks "Run KP26" (or KP27, or other scenario).
+
+
+
+2. WinActor Automation
+
+Open SAP → login (secure credentials).
+
+Navigate to TCode (KP26/KP27).
+
+Calculate quarter + 1 month (macro).
+
+Load Cost Center list from Excel.
+
+
+
+3. Execution
+
+Loop through cost centers → update values.
+
+Log each step (Success/Fail) in a log Excel.
+
+Capture screenshot or SAP export for proof.
+
+
+
+4. Proof Compilation
+
+Save all screenshots & logs.
+
+Compile into Excel prooflist (with links to screenshots).
+
+
+
+5. Email Notification
+
+Open Outlook.
+
+Get To/CC list from Excel.
+
+Build dynamic body from template + summary.
+
+Attach prooflist.
+
+Send.
+
+
+
+
+
+---
+https://peachpuff-dotterel-884227.hostingersite.com
+
+
+
