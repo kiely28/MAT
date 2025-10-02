@@ -1,0 +1,42 @@
+KP26 - Open centralized app for compiling all scenarios in winactor
+click button for KP26 scenario the app open the winactor
+using winactor automation,
+Open SAP 
+enter login user details using macro
+enter tcode kp26
+set value need for tcode details(calculate quarterly months add +1 month for running and fiscal year using macro)
+set cost center from excel list then execute
+loop and update value then save
+after update all cost center, 
+open tcode kp27
+set value need for tcode details(calculate quarterly months add +1 month for running and fiscal year using macro)
+set cost center from excel list then execute
+screenshot and save in another excel file for prooflist,
+then open outlook,
+get the to and cc from excel files(compilation using macro)
+set email body from .txt file(dynamic)
+attach the excel file prooflist for KP26 then send 
+for notification.
+
+SALR - Open centralized app for compiling all scenarios in winactor
+if SALR, upload updated file for coefficient then
+click button for SALR scenario the app open the winactor
+using winactor automation,
+check the yr month of upload coefficient file using macro
+copy details per o/h rate and paste to excel template,
+check quarter if its add, update or delete the percentage per o/h key
+Open SAP 
+enter login user details using macro
+enter tcode SALR
+set to edit mode
+loop through o/h rate template then save percentage per o/h key 
+after update all 
+set to view mode
+screenshot and save in another excel file for prooflist,
+then open outlook,
+get the to and cc from excel files(compilation using macro)
+set email body from .txt file(dynamic)
+attach the excel file prooflist for KP26 then send 
+for notification.
+
+
