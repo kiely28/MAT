@@ -102,3 +102,124 @@ https://peachpuff-dotterel-884227.hostingersite.com
 
 
 
+
+
+Perfect 👍 Let’s write your System Flow in bullet form (clear, top-down).
+
+
+---
+
+🔹 System Flow – Centralized Automation App
+
+1. Start
+
+User opens Central App UI.
+
+Two options available: KP26 button or SALR button.
+
+
+
+---
+
+2. If KP26 Button is clicked
+
+App launches WinActor automation.
+
+Automation opens SAP and logs in (via macro).
+
+Enter Tcode KP26.
+
+Read Cost Center list from Excel.
+
+Loop through cost centers:
+
+Calculate quarterly values (+1 month fiscal adjustment).
+
+Update values in SAP.
+
+Save after updates.
+
+
+After all updates:
+
+Open Tcode KP27 for verification.
+
+Execute and take screenshot.
+
+Save results into Prooflist Excel file.
+
+
+Open Outlook:
+
+Read TO and CC recipients from Excel.
+
+Read email body from .txt template.
+
+Attach Prooflist Excel file.
+
+Send email notification.
+
+
+Save log + archive proof folder.
+
+
+
+---
+
+3. If SALR Button is clicked
+
+User uploads updated Coefficient file.
+
+Validate year/month of uploaded file.
+
+Copy details per O/H rate to Excel template.
+
+Check quarter rules (Add / Update / Delete %).
+
+Launch WinActor automation.
+
+Automation opens SAP and logs in (via macro).
+
+Enter Tcode SALR, switch to Edit Mode.
+
+Loop through O/H rate template:
+
+Apply Add / Update / Delete action.
+
+Save changes.
+
+
+Switch to View Mode.
+
+Take screenshot + save results into Prooflist Excel file.
+
+Open Outlook:
+
+Read TO and CC recipients from Excel.
+
+Read email body from .txt template.
+
+Attach Prooflist Excel file.
+
+Send email notification.
+
+
+Save log + archive proof folder.
+
+
+
+---
+
+4. End
+
+System stores Run Log, Screenshots, and Prooflists in archive folder.
+
+Process completed.
+
+
+
+---
+
+Would you like me to also make this into a high-level swimlane system flow (User / App UI / Excel / WinActor / SAP / Outlook) in bullet form so it shows who does what?
+
+
