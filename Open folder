@@ -1,0 +1,44 @@
+Got it 👍 You want a VBA macro that will automatically open your Downloads folder, look for today’s file with a name like:
+
+message_latency YYYY-MM-DD.csv
+
+and then open it in Excel.
+
+Here’s the macro code for you:
+
+Sub OpenTodayLatencyFile()
+    Dim todayDate As String
+    Dim filePath As String
+    Dim downloadsPath As String
+    
+    ' Get today's date in the required format (YYYY-MM-DD)
+    todayDate = Format(Date, "yyyy-mm-dd")
+    
+    ' Path to the Downloads folder
+    downloadsPath = Environ("USERPROFILE") & "\Downloads\"
+    
+    ' Construct full file path
+    filePath = downloadsPath & "message_latency " & todayDate & ".csv"
+    
+    ' Check if file exists
+    If Dir(filePath) <> "" Then
+        Workbooks.Open Filename:=filePath
+    Else
+        MsgBox "File not found: " & vbCrLf & filePath, vbExclamation, "File Missing"
+    End If
+End Sub
+
+🔹 How it works
+
+1. Gets today’s date and formats it as 2025-10-03.
+
+
+2. Builds the full file path inside your Downloads folder.
+
+
+3. Opens the file if it exists; otherwise, shows a warning.
+
+
+
+👉 Do you want me to also make it automatically open yesterday’s file if today’s isn’t available?
+
