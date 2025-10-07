@@ -242,4 +242,64 @@ kp26 email body.txt	Text file containing the editable email body for KP26 automa
 
 Would you like me to now compile all five components (coefficient.exe, coefficient.xlsm, KP26.ums7, S_ALR.ums7, and kp26 email body.txt) into a single formatted Program Update Control Form summary table?
 
+---
+
+Excellent 👍 — here’s a clear and concise description and purpose for both your prooflist and template folders:
+
+
+---
+
+🗂️ Folder: prooflist
+
+Description:
+prooflist is a dedicated folder used to store the generated proof documents (e.g., screenshots, Excel, or PDF files) created after the SAP automation process completes.
+These files serve as evidence or audit records that the KP26 or related automation successfully executed and saved updates in SAP.
+
+Purpose:
+
+To organize and store proof documents produced by WinActor automation (e.g., SAP confirmation screenshots).
+
+To provide a record of completion and accuracy for each automation run.
+
+To make it easy for users to review or attach proofs to email notifications.
+
+To serve as a reference for audit and traceability of SAP updates.
+
+
+
+---
+
+🗂️ Folder: template
+
+Description:
+template is a system folder that stores the base files or input templates (e.g., coefficient.xlsm, configuration sheets) used by the automation program.
+It ensures that all automation runs use the latest and standardized version of input files.
+
+Purpose:
+
+To store and manage official data templates used for automation input (e.g., cost center coefficient sheets).
+
+To maintain version control and consistency of templates used in SAP processes.
+
+To centralize the source files for easier updates and maintenance.
+
+To ensure the automation program always references the correct and updated input data.
+
+
+
+---
+
+⚙️ Summary Table
+
+Folder Name	Description	Purpose
+
+prooflist	Folder that stores screenshots or generated proof documents from automation results	Keeps proof of SAP update completion for reference and audit
+template	Folder that stores the base or input template files used by the automation	Ensures consistent and up-to-date data sources for automation execution
+
+
+
+---
+
+Would you like me to now compile all eight components (coefficient.exe, coefficient.xlsm, KP26.ums7, S_ALR.ums7, kp26 email body.txt, copylogfile.txt, prooflist folder, and template folder) into one complete Program Update Control Form table (with Name, Description, Purpose, Input, Output)?
+
 
