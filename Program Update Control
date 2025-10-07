@@ -92,3 +92,50 @@ S_ALR.ums7	Automates SAP report (S_ALR) transaction	Generates and exports financ
 
 Would you like me to also include these descriptions formatted for your Program Update Control Form (with fields like Module Name, Description, Purpose, Input, Output)?
 
+
+---
+
+Perfect 👍 here’s a clear and professional description and purpose for your coefficient.exe — your centralized app UI:
+
+
+---
+
+🖥️ File: coefficient.exe
+
+Description:
+coefficient.exe is the centralized application interface (UI) that serves as the main control hub for executing automation scenarios.
+It provides an easy-to-use graphical interface where users can select and run automation modules such as KP26.ums7 and S_ALR.ums7 without manually opening WinActor or SAP.
+The app handles process launching, parameter passing, and status display during automation runs.
+
+
+---
+
+Purpose:
+
+To act as the main entry point for all SAP automation activities.
+
+To allow users to choose automation scenarios (e.g., KP26 update or report generation) through simple buttons.
+
+To trigger WinActor automation scripts automatically and pass necessary data (like fiscal year, month, or file path).
+
+To monitor and log process completion, errors, and outputs.
+
+To ensure a standardized and user-friendly way of controlling automation workflows.
+
+
+
+---
+
+⚙️ Summary Table
+
+Component	Description	Purpose
+
+coefficient.exe	Centralized app UI that integrates and controls automation modules	Provides a user interface to run SAP automation (e.g., KP26 update, report generation) and manage process flow
+
+
+
+---
+
+Would you like me to now compile all four components — coefficient.exe, coefficient.xlsm, KP26.ums7, and S_ALR.ums7 — into one clean, ready-to-paste Program Update Control Form summary table (with fields like Name, Description, Purpose, Input, Output)?
+
+
