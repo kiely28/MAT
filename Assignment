@@ -25,3 +25,72 @@ Proposed System Design:
 Benefits: *
 
 Inventory Data Result and Reports Macro.xlsm - Description, Purpose
+
+
+1008 800AM
+Inventory data running
+
+Problems Encountered
+• Manual navigation and data extraction in SAP GUI are time-consuming and inconsistent across users.
+• High risk of human error during data entry and report preparation, especially during peak stocktaking periods.
+• Delays in generating consolidated inventory reports due to repetitive manual formatting.
+• Difficulty in validating and comparing posting differences between actual and system records.
+• Lack of standardized report templates leading to non-uniform presentation of results across plants or sections.
+• Increased workload for the system master team, reducing time available for analysis and decision-making.
+
+
+Objectives
+• To automate SAP GUI stocktaking processes through Excel VBA macros for faster and more accurate data handling.
+• To standardize the extraction and formatting of stocktaking reports across all plants and sections.
+• To minimize human error in data entry, report generation, and posting validations.
+• To shorten the time required for report preparation and improve overall process efficiency.
+• To provide section in-charges with clear and consistent reports for discrepancy analysis and decision-making.
+• To enhance data accuracy, audit readiness, and transparency in stocktaking operations.
+
+
+Benefits
+• Significant reduction in manual workload and processing time during stocktaking.
+• Improved accuracy of inventory data and minimized risk of human error.
+• Faster generation of standardized reports for easier review and consolidation.
+• Enhanced visibility of posting differences and discrepancies across plants and sections.
+• Strengthened internal controls and improved audit compliance.
+• Increased efficiency allows the system master team to focus on analysis rather than repetitive tasks.
+• More reliable and timely information supports better decision-making during inventory periods.
+
+
+Live Run - Coefficient
+Incorrect Input Data
+• Wrong values read from Excel or template file
+• Validate input files using Excel macro; add message box confirmation before automation starts
+File Path Error
+• WinActor cannot locate the required file (template, prooflist, or log)
+• Use fixed folder structure; include path verification step before execution
+
+
+
+
+Program Update Control
+
+Description:
+The Inventory Data Result and Reports Macro.xlsm is an Excel VBA-based tool designed to automate SAP GUI scripting for stocktaking activities. It streamlines data extraction, formatting, and report generation directly from SAP.
+Purpose:
+To reduce manual operations, improve data accuracy, and automatically generate standardized stocktaking reports such as Inventory Results, Summary Reports per Plant and Section, and Difference Posting Checks.
+
+
+
+
+
+Risk Assessment and Risk Control
+
+Human error during execution
+1.
+• Users may click the wrong button or input incorrect parameters before running the macro.
+• Add user input validation, confirmation prompts, and clear on-screen instructions.
+2.
+• Large data volume may cause slow macro execution.	
+• Optimize VBA code and limit data extraction to required fields only.
+
+
+
+
+
