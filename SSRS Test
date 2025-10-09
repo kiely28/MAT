@@ -1,0 +1,13 @@
+Existing button code aspx:
+<asp:Button ID="btnViewAttendees" runat="server" CssClass="btn btn-info text-white me-2 w-auto"
+                                Text="View Attendees" OnClick="btnViewAttendees_Click" />
+
+Code behind:
+        protected void btnViewAttendees_Click(object sender, EventArgs e)
+        {
+            string meetingId = hfMeetingID.Value; // assuming it's stored
+            Response.Redirect($"viewattendees.aspx?meetingId={meetingId}");
+        }
+
+SSRS link:
+http://192.12.52.232/reports/report/Reports/Attendance%20Tapping/Meeting_Attendance_Report2
