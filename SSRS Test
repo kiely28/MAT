@@ -68,3 +68,47 @@ Would you like the report to auto-render immediately (skipping the SSRS paramete
 
 An attempt was made to set a report parameter 'MeetingID' that is not defined in this report. (rsUnknownReportParameter)
 
+-- 
+
+aspx code:
+<asp:LinkButton ID="btnViewMeeting" runat="server"
+    CommandName="ViewAttendees"
+    CommandArgument='<%# Container.DataItemIndex %>'
+    CssClass="btn btn-sm text-primary me-1"
+    ToolTip="View Attendees">
+    <i class="far fa-eye"></i> View Attendees
+</asp:LinkButton>
+
+code behind:
+        protected void gvMeetings_RowCommand(object sender, GridViewCommandEventArgs e)
+        {
+            if (e.CommandName == "ViewAttendees")
+            {
+                //string meetingId = e.CommandArgument.ToString();
+
+
+                int rowIndex = Convert.ToInt32(e.CommandArgument);
+                GridViewRow row = gvMeetings.Rows[rowIndex];
+
+                // Get values from GridView cells (adjust index if needed)
+                string meetingId = gvMeetings.DataKeys[rowIndex].Value.ToString();
+                string title = row.Cells[2].Text;   // Title column
+                string start = row.Cells[3].Text;   // Start Date column
+                string end = row.Cells[4].Text;     // End Date column
+                string location = row.Cells[5].Text; // Venue column
+                //string status = row.Cells[6].Text; // Status column
+                Label lblStatus = (Label)row.FindControl("lblStatus");
+                string status = lblStatus.Text;
+
+
+                // Save to Session
+                Session["MeetingId"] = meetingId;
+                Session["Title"] = title;
+                Session["StartTime"] = start;
+                Session["EndTime"] = end;
+                Session["Location"] = location;
+
+                Response.Redirect("viewattendees.aspx?MeetingId=" + meetingId);
+            }
+        }
+
