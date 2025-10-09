@@ -11,3 +11,54 @@ Code behind:
 
 SSRS link:
 http://192.12.52.232/reports/report/Reports/Attendance%20Tapping/Meeting_Attendance_Report2
+
+
+-- 
+
+Perfect 👍 — here’s your final version that opens your SSRS report in a new browser tab when the button is clicked:
+
+
+---
+
+✅ ASPX Button
+
+<asp:Button ID="btnViewAttendees" runat="server" 
+    CssClass="btn btn-info text-white me-2 w-auto"
+    Text="View Attendees" 
+    OnClick="btnViewAttendees_Click" />
+
+
+---
+
+✅ Code-behind (C#)
+
+protected void btnViewAttendees_Click(object sender, EventArgs e)
+{
+    string meetingId = hfMeetingID.Value; // Your hidden field that stores the Meeting ID
+
+    // SSRS report base URL
+    string reportUrl = "http://192.12.52.232/reports/report/Reports/Attendance%20Tapping/Meeting_Attendance_Report2";
+
+    // Append parameter (change 'MeetingID' to match your SSRS parameter name)
+    string fullUrl = $"{reportUrl}?MeetingID={meetingId}";
+
+    // Open report in a new browser tab
+    string script = $"window.open('{fullUrl}', '_blank');";
+    ClientScript.RegisterStartupScript(this.GetType(), "openReport", script, true);
+}
+
+
+---
+
+🧩 Notes:
+
+Make sure your SSRS report parameter name (MeetingID) matches the one used inside the report.
+
+If your report requires authentication, ensure the browser session is already authenticated in SSRS (or set SSRS to allow Windows authentication).
+
+
+
+---
+
+Would you like the report to auto-render immediately (skipping the SSRS parameter prompt page)? I can show how to include that option (using rs:Command=Render).
+
