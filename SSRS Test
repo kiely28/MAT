@@ -112,3 +112,107 @@ code behind:
             }
         }
 
+
+
+---
+
+Excellent — that’s a LinkButton inside a data-bound control (like a GridView or Repeater), so instead of using OnClick, you’ll handle the RowCommand (GridView) or ItemCommand (Repeater) event on the parent control.
+
+Let’s walk through how to make it open your SSRS report in a new tab while passing the MeetingID from your data row. 👇
+
+
+---
+
+✅ Example for GridView
+
+🧱 ASPX
+
+<asp:GridView ID="gvMeetings" runat="server" AutoGenerateColumns="False" 
+    OnRowCommand="gvMeetings_RowCommand">
+    <Columns>
+        <asp:TemplateField HeaderText="Actions">
+            <ItemTemplate>
+                <asp:LinkButton ID="btnViewMeeting" runat="server"
+                    CommandName="ViewAttendees"
+                    CommandArgument='<%# Eval("MeetingID") %>'
+                    CssClass="btn btn-sm text-primary me-1"
+                    ToolTip="View Attendees">
+                    <i class="far fa-eye"></i> View Attendees
+                </asp:LinkButton>
+            </ItemTemplate>
+        </asp:TemplateField>
+    </Columns>
+</asp:GridView>
+
+💡 Here, CommandArgument='<%# Eval("MeetingID") %>' passes your meeting ID value directly from the data source.
+
+
+---
+
+💻 Code-behind (C#)
+
+protected void gvMeetings_RowCommand(object sender, GridViewCommandEventArgs e)
+{
+    if (e.CommandName == "ViewAttendees")
+    {
+        string meetingId = e.CommandArgument.ToString();
+
+        // SSRS base URL
+        string reportUrl = "http://192.12.52.232/reports/report/Reports/Attendance%20Tapping/Meeting_Attendance_Report2";
+
+        // Use your actual SSRS parameter name here
+        string fullUrl = $"{reportUrl}?meeting_id={meetingId}&rs:Command=Render";
+
+        // Open in a new tab
+        string script = $"window.open('{fullUrl}', '_blank');";
+        ClientScript.RegisterStartupScript(this.GetType(), "openReport", script, true);
+    }
+}
+
+
+---
+
+✅ Example for Repeater (same logic)
+
+If you’re using a Repeater, handle it in ItemCommand instead:
+
+<asp:Repeater ID="rptMeetings" runat="server" OnItemCommand="rptMeetings_ItemCommand">
+    <ItemTemplate>
+        <asp:LinkButton ID="btnViewMeeting" runat="server"
+            CommandName="ViewAttendees"
+            CommandArgument='<%# Eval("MeetingID") %>'
+            CssClass="btn btn-sm text-primary me-1">
+            <i class="far fa-eye"></i> View Attendees
+        </asp:LinkButton>
+    </ItemTemplate>
+</asp:Repeater>
+
+protected void rptMeetings_ItemCommand(object source, RepeaterCommandEventArgs e)
+{
+    if (e.CommandName == "ViewAttendees")
+    {
+        string meetingId = e.CommandArgument.ToString();
+        string reportUrl = "http://192.12.52.232/reports/report/Reports/Attendance%20Tapping/Meeting_Attendance_Report2";
+        string fullUrl = $"{reportUrl}?meeting_id={meetingId}&rs:Command=Render";
+
+        string script = $"window.open('{fullUrl}', '_blank');";
+        ClientScript.RegisterStartupScript(this.GetType(), "openReport", script, true);
+    }
+}
+
+
+---
+
+✅ Summary
+
+You are using	Event to handle	CommandArgument contains	Open SSRS report
+
+GridView	RowCommand	Eval("MeetingID")	With window.open()
+Repeater	ItemCommand	Eval("MeetingID")	With window.open()
+
+
+
+---
+
+Would you like the report to open filtered by multiple parameters (e.g. MeetingID + DateRange)? I can show how to append more SSRS parameters to the URL easily.
+
