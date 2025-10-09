@@ -62,3 +62,9 @@ If your report requires authentication, ensure the browser session is already au
 
 Would you like the report to auto-render immediately (skipping the SSRS parameter prompt page)? I can show how to include that option (using rs:Command=Render).
 
+
+---
+
+
+An attempt was made to set a report parameter 'MeetingID' that is not defined in this report. (rsUnknownReportParameter)
+
