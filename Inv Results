@@ -1,0 +1,60 @@
+A. Stocktaking Inventory Result				
+	1	Open the Excel workbook containing the macro (Inventory Data Results and Report Macro.xlsm).	Open the Excel workbook containing the macro.	Open the Excel workbook containing the macro.
+	2	Ensure SAP GUI is installed and scripting is enabled.	Ensure SAP GUI is installed and scripting is enabled.	Ensure SAP GUI is installed and scripting is enabled.
+	3	Launch SAP and confirm login credentials are available.	Launch SAP and confirm login credentials are available.	Launch SAP and confirm login credentials are available.
+	4	Run the macro Stocktaking Inventory Results from Excel.	Run the macro Stocktaking Inventory Results from Excel.	Run the macro Stocktaking Inventory Results from Excel.
+	5	Macro logs into SAP using provided credentials.	Macro logs into SAP using provided credentials.	Macro logs into SAP using provided credentials.
+	6	Macro navigates to the specified TCode (e.g., ZAML3E).		
+	7	Macro sets multiple plant codes (e.g., R101, R102, R10A, R10E) in the selection screen.		
+	8	Enter selection criteria including plants and file name.		
+	9	Execute the transaction and export data to Excel.	Execute the transaction and export data to Excel.	Execute the transaction and export data to Excel.
+	10	Delete unnecessary columns from the exported data (e.g., Profit Center).	Delete unnecessary columns from the exported data (e.g., Profit Center).	Delete unnecessary columns from the exported data (e.g., Profit Center).
+	11	Format relevant columns (e.g., Price USD).	Format relevant columns (e.g., Price USD).	Format relevant columns (e.g., Price USD).
+	12	Calculate total values for numeric columns (e.g., Sys Avail. Quantity(A), Sys Avail. Amount(B) USD).	Calculate total values for numeric columns (e.g., Sys Avail. Quantity(A), Sys Avail. Amount(B) USD).	Calculate total values for numeric columns (e.g., Sys Avail. Quantity(A), Sys Avail. Amount(B) USD).
+	13	Calculate percentage values (e.g., Discrepancy Avail. Amt Var(G-H) (I) USD, Sys Avail. Amount(B) USD).	Calculate percentage values (e.g., Discrepancy Avail. Amt Var(G-H) (I) USD, Sys Avail. Amount(B) USD).	Calculate percentage values (e.g., Discrepancy Avail. Amt Var(G-H) (I) USD, Sys Avail. Amount(B) USD).
+	14	Set a custom file name based on plant and date (e.g., Plant_ + Month+Year + Result.xlsx).	Set a custom file name based on plant and date (e.g., Plant_ + Month+Year + Result.xlsx).	Set a custom file name based on plant and date (e.g., Plant_ + Month+Year + Result.xlsx).
+	15	Create or verify existence of a default folder (e.g., D:\Inventory Data Results and Reports).	Create or verify existence of a default folder (e.g., D:\Inventory Data Results and Reports).	Create or verify existence of a default folder (e.g., D:\Inventory Data Results and Reports).
+	16	Save the formatted Excel file to the default folder with the custom name.	Save the formatted Excel file to the default folder with the custom name.	Save the formatted Excel file to the default folder with the custom name.
+	17	Close SAP session.	Close SAP session.	Close SAP session.
+B. Stocktaking Summary Report				
+	1	Exported SAP data to Excel (source: Stocktaking Inventory Results).		
+	2	Open the exported Excel file.		
+	3	Insert a new worksheet named Pivot Result.		
+	4	Create a pivot table in Sheet2 using the exported data.		
+	5	Set "Plant" as the row field in the pivot table		
+	6	Add relevant columns (e.g., Sys Avail. Quantity(A)) as values in the pivot table.		
+	7	Open the provided Excel template file (PR Stock Discrepancy Summary July 2025.xlsx)		
+	8	Copy the pivot table data from Sheet2		
+	9	Paste the pivot data into the designated area in the template		
+	10	Check that formulas in the template (e.g., Overall Total) are calculating correctly		
+	11	Save as the updated template file.		
+C. Stocktaking Result Per Section Incharge				
+	1	Exported SAP data to Excel (source: Stocktaking Inventory Results).		
+	2	Open the exported Excel file.		
+	3	Insert a new worksheet named Pivot Result.		
+	4	Create a pivot table in Sheet2 using the exported data.		
+	5	Set "Incharge" as the row field in the pivot table		
+	6	Add relevant columns (e.g., Sys Avail. Quantity(A)) as values in the pivot table.		
+	7	Open the provided Excel template file (Stocktaking Result Per Section Incharge Template.xlsx)		
+	8	Copy the pivot table data from Sheet2		
+	9	Paste the pivot data into the designated area in the template		
+	10	Check that formulas in the template (e.g., Total) are calculating correctly		
+	11	Save as the updated template file.		
+D. Difference Posting Check				
+	1	Run the Discrepancy Posting Check from Excel.	Run the Discrepancy Posting Check from Excel	Run the Discrepancy Posting Check from Excel
+	2	Copy (Sum of Act Avail. Quantity (C)) per plant from the Stocktaking Summary Report pivot table.	Copy Sum of Act Avail. Quantity (C) Per Plant) from the Stocktaking Summary Report pivot table	Copy Sum of Act Avail. Quantity (C) Per Plant) from the Stocktaking Summary Report pivot table
+	3	Open the provided Excel template (PR Difference Posting Check.xlsx).	Open the provided Excel template (PR Difference Posting Check.xlsx).	Open the provided Excel template (PR Difference Posting Check.xlsx).
+	4	Paste the copied data into the designated area in the template.	Paste the copied data into the designated area in the template	Paste the copied data into the designated area in the template
+	5	Check that formulas in the template are calculating correctly.	Check that formulas in the template are calculating correctly	Check that formulas in the template are calculating correctly
+	6	Macro logs into SAP using provided credentials.	Macro logs into SAP using provided credentials	Macro logs into SAP using provided credentials
+	7	Macro navigates to the specified TCode (e.g., ZAML2M).	Macro navigates to the specified TCode (e.g., ME2N, MB52)	Macro navigates to the specified TCode (e.g., ME2N, MB52)
+	8	Macro sets multiple plant codes (e.g.,  R101, R102, R10A, R10E).	Macro sets multiple plant codes (e.g., PL01, PL02, PL03)	Macro sets multiple plant codes (e.g., PL01, PL02, PL03)
+	9	Enter selection criteria including plants and file name.	Enter selection criteria including plants and date range	Enter selection criteria including plants and date range
+	10	Macro sets a custom file name based on plant and date.	Macro sets a custom file name based on plant and date	Macro sets a custom file name based on plant and date
+	11	Execute the transaction and export data to Excel.	Execute the transaction and export data to Excel	Execute the transaction and export data to Excel
+	12	Create a pivot table from the exported data with "Plant" as rows and "AVAILABLE" as values.	Create a pivot table from the exported data with "Plant" as rows and "Quantity" as values	Create a pivot table from the exported data with "Plant" as rows and "Quantity" as values
+	13	Copy the pivot table data.	Copy the pivot table data	Copy the pivot table data
+	14	Paste the pivot data into the designated area in the provided template.	Paste the pivot data into the designated area in the provided template	Paste the pivot data into the designated area in the provided template
+	15	Check that formulas in the template (e.g., total) are calculating correctly.	Check that formulas in the template (e.g., totals, percentages) are calculating correctly	Check that formulas in the template (e.g., totals, percentages) are calculating correctly
+	16	Save the updated template file to a default folder (e.g., D:\Inventory Data Results and Reports) with the custom file name.	Save the updated template file to a default folder (e.g., C:\SAP_Reports) with the custom file name	Save the updated template file to a default folder (e.g., C:\SAP_Reports) with the custom file name
+	17	Close SAP session.	Close SAP session.	Close SAP session.
